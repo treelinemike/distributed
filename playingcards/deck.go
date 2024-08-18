@@ -15,7 +15,8 @@ func (deck *Deck) AddCard(c Card) error {
 }
 
 func (deck *Deck) Create() error {
-	for i := 1; i <= 13; i++ {
+	deck.cards = nil
+    for i := 1; i <= 13; i++ {
 		deck.AddCard(Card{i, Clubs})
 		deck.AddCard(Card{i, Diamonds})
 		deck.AddCard(Card{i, Hearts})

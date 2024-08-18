@@ -10,7 +10,8 @@ func main() {
 	// create and shuffle a standard deck
 	deck := new(playingcards.Deck)
 	deck.Create()
-	deck.Shuffle()
+	deck.Create()
+    deck.Shuffle()
 	fmt.Println("Shuffled deck:")
 	deck.Show()
 	fmt.Println("Top card is: ", deck.TakeTopCard().String())
