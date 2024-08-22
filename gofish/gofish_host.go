@@ -14,6 +14,8 @@ func main() {
     var err error
 
     // pull time as a seed for the rng
+    // TODO: check whether we can get consistent performance with a specified seed
+    // if so could use this for grading purposes
     rand.Seed(time.Now().UnixNano()) //https://stackoverflow.com/questions/12321133/how-to-properly-seed-random-number-generator
 
 	// create and shuffle a standard deck
