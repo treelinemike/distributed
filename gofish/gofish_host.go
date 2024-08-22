@@ -25,9 +25,9 @@ func main() {
     players_ip := [...]string{"192.168.10.10","192.168.10.20"}
     
     // open network connections to all players
+    fmt.Println("Connecting to remote player servers...")
     var players []*rpc.Client
     for _, ip := range players_ip {
-        fmt.Println(ip)
         client, err := rpc.DialHTTP("tcp",ip+":"+port)
         if err != nil {
             fmt.Println("Error connecting to remote server: "+ip)
