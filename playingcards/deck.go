@@ -16,8 +16,14 @@ func (deck *Deck) AddCardRPC(card Card,resp *int) error{
     if( err != nil ){
         return errors.New("Could not add card")
     }
-    fmt.Println("Added card... current contents:")
+    fmt.Println("We got a card! Current hand:")
     deck.Show()
+    return nil
+}
+
+func (deck *Deck) ResetDeckRPC(args int, resp *int) error{
+    fmt.Println("Resetting deck")
+    deck.cards = nil
     return nil
 }
 
@@ -25,7 +31,6 @@ func (deck *Deck) AddCard(c Card) error {
 	if( c.Val < 1 || c.Val > 13){
         return errors.New("Invalid card")
     }
-    fmt.Println("ok to add")
     deck.cards = append(deck.cards, c)
     return nil
 }
@@ -51,8 +56,11 @@ func (deck *Deck) Shuffle() error {
 	return nil
 }
 
+func (deck Deck) NumCards() int{
+    return len(deck.cards)
+}
+
 func (deck Deck) Show() error {
-	// let's check the shuffled deck
 	space := ""
 	for i := range deck.cards {
 		fmt.Print(space, deck.cards[i].String())

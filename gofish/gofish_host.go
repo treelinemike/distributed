@@ -7,40 +7,47 @@ import (
 )
 
 func main() {
+    
+    var j int // this is silly - RPC interface requires reply var even if not used...
+    var err error
 
 	// create and shuffle a standard deck
 	deck := new(playingcards.Deck)
 	deck.Create()
 	deck.Create()
     deck.Shuffle()
-	fmt.Println("Shuffled deck:")
-	deck.Show()
-	fmt.Println("Top card is: ", deck.TakeTopCard().String())
-	fmt.Println("Deck is now:")
-	deck.Show()
-	deck.Shuffle()
-	fmt.Println("After shuffling again:")
-	deck.Show()
+    fmt.Printf("Deck has %d cards\n",deck.NumCards())
 
-    // now we deal one card to test RPC
-    client, err := rpc.DialHTTP("tcp","192.168.10.10:1234")
-    if err != nil {
-        fmt.Println("Error connecting to remote server...")
-    }
-    /*a := new(playingcards.MyArgType)
-    a.X = 1
-    a.ThisSuit = playingcards.Hearts
-    //import "errors"
-    j := 2
-    err = client.Call("TestCard.TestRPC",a,&j)
-    */
-    card := new(playingcards.Card)
-    card.Val = 2
-    card.CardSuit = playingcards.Hearts
-    var j int
-    err = client.Call("Deck.AddCardRPC",card,&j)
-    if err!= nil {
-        fmt.Println("Error executing RPC: "+err.Error())
+    // list of all players
+    port := "1234"
+    players_ip := [...]string{"192.168.10.10","192.168.10.20"}
+    
+    // open network connections to all players
+    var players []*rpc.Client
+    for _, ip := range players_ip {
+        fmt.Println(ip)
+        client, err := rpc.DialHTTP("tcp",ip+":"+port)
+        if err != nil {
+            fmt.Println("Error connecting to remote server: "+ip)
+            continue
+        }   
+        players = append(players,client)
+        err = client.Call("Deck.ResetDeckRPC",j,&j)
     }
 
+    // deal seven cards to each player
+    fmt.Println("Dealing cards...")
+    for i:= 0; i<7; i++ {
+        for _, player := range players {
+            // TODO: take top card and put it back if RPC fails
+            err = player.Call("Deck.AddCardRPC",deck.TakeTopCard(),&j)
+            if err != nil {
+                fmt.Println("Error dealing card: "+err.Error())
+            }
+        }
+    }
+
+    // show remaining deck
+    fmt.Printf("All hands dealt. Remaining deck has %d cards:\n",deck.NumCards())
+    deck.Show()
 }
