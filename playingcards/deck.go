@@ -3,15 +3,31 @@ package playingcards
 import (
 	"fmt"
 	"math/rand"
+    "errors"
 )
 
 type Deck struct {
-	cards []Card
+    cards []Card
+}
+
+// wrapper for AddCard() that statisfies the RPC interface
+func (deck *Deck) AddCardRPC(card Card,resp *int) error{
+    err := deck.AddCard(card)
+    if( err != nil ){
+        return errors.New("Could not add card")
+    }
+    fmt.Println("Added card... current contents:")
+    deck.Show()
+    return nil
 }
 
 func (deck *Deck) AddCard(c Card) error {
-	deck.cards = append(deck.cards, c)
-	return nil
+	if( c.Val < 1 || c.Val > 13){
+        return errors.New("Invalid card")
+    }
+    fmt.Println("ok to add")
+    deck.cards = append(deck.cards, c)
+    return nil
 }
 
 func (deck *Deck) Create() error {

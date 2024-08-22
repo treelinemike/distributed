@@ -1,6 +1,7 @@
 package playingcards
 
 import "strconv"
+import "fmt"
 
 type Suit int
 const (
@@ -10,18 +11,34 @@ const (
    Spades
    )
 
+// values in Card need to be exported to use as argument in RPC
 type Card struct {
-    val int
-    suit Suit
+    Val int
+    CardSuit Suit
+}
+
+type TestCard struct{
+    Val,Suit int
+}
+
+type MyArgType struct{
+    X,Y int
+    ThisName string
+    ThisSuit Suit
+}
+
+func (tc *TestCard) TestRPC(a MyArgType, b *int) error{
+    fmt.Println("Executing RPC. X = ",a.X,a.ThisSuit)
+    return nil
 }
 
 func (c Card) String() string{
     var str string
     
-    if(c.val > 1 && c.val < 11){
-        str += strconv.Itoa(c.val)
+    if(c.Val > 1 && c.Val < 11){
+        str += strconv.Itoa(c.Val)
     } else {
-        switch c.val{
+        switch c.Val{
         case 1:
             str += "A"
         case 11:
@@ -32,7 +49,7 @@ func (c Card) String() string{
             str += "K"
         }
     }
-    switch c.suit{
+    switch c.CardSuit{
     case Clubs:
         str += "\u2663"
     case Diamonds:

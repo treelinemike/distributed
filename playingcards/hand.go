@@ -6,6 +6,10 @@ type Hand struct {
 	cards []Card
 }
 
+func (hand *Hand) AddCardRPC(card *Card, reply *int) error{
+    return nil
+}
+
 func (hand *Hand) AddCard(c Card) error { // TODO: can we leverage non-class methods in Go for this (use same method as in Deck?
     hand.cards = append(hand.cards, c)
     return nil
