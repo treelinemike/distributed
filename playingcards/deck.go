@@ -31,7 +31,7 @@ func (deck *Deck) AddCard(c Card) error {
 	if( c.Val < 1 || c.Val > 13){
         return errors.New("Invalid card")
     }
-    deck.cards = append(deck.cards, c)
+    deck.cards = append([]Card{c}, deck.cards...)
     return nil
 }
 

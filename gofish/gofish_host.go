@@ -13,6 +13,7 @@ func main() {
     var j int // this is silly - RPC interface requires reply var even if not used...
     var err error
 
+    // TODO: MOVE THIS INTO playingcards PACKAGE
     // pull time as a seed for the rng
     // TODO: check whether we can get consistent performance with a specified seed
     // if so could use this for grading purposes
@@ -51,11 +52,13 @@ func main() {
             // TODO: take top card and put it back if RPC fails
             c := deck.TakeTopCard()
             fmt.Printf("Taking top card: " + c.String()+"\n")
-            err = player.Call("Deck.AddCardRPC",deck.TakeTopCard(),&j)
+            err = player.Call("Deck.AddCardRPC",c,&j)
             if err != nil {
                 fmt.Println("Error dealing card: "+err.Error())
+                // TODO: RETURN TO DECK
+                fmt.Println("Card returned to deck.")
             }
-        }
+        }i
     }
 
     // show remaining deck
