@@ -35,6 +35,8 @@ func main() {
     err = client.Call("TestCard.TestRPC",a,&j)
     */
     card := new(playingcards.Card)
+    card.Val = 2
+    card.CardSuit = playingcards.Hearts
     var j int
     err = client.Call("Deck.AddCardRPC",card,&j)
     if err!= nil {
