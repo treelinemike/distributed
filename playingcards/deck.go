@@ -48,8 +48,15 @@ func (deck *Deck) Create() error {
 
 // method to shuffle the deck
 // shuffle (see: https://stackoverflow.com/questions/12264789/shuffle-array-in-go)
+// https://stackoverflow.com/questions/12321133/how-to-properly-seed-random-number-generator
 func (deck *Deck) Shuffle() error {
-	for i := range deck.cards {
+	
+    // TODO: check whether we can get consistent performance with a specified seed
+    // if so could use this for grading purposes
+    rand.Seed(time.Now().UnixNano())
+    
+    // shuffle cards
+    for i := range deck.cards {
 		j := rand.Intn(i + 1)
 		deck.cards[i], deck.cards[j] = deck.cards[j], deck.cards[i]
 	}

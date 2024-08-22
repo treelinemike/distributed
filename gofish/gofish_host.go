@@ -4,20 +4,12 @@ import (
 	"engg415/playingcards"
 	"fmt"
     "net/rpc"
-    "math/rand"
-    "time"
 )
 
 func main() {
     
     var j int // this is silly - RPC interface requires reply var even if not used...
     var err error
-
-    // TODO: MOVE THIS INTO playingcards PACKAGE
-    // pull time as a seed for the rng
-    // TODO: check whether we can get consistent performance with a specified seed
-    // if so could use this for grading purposes
-    rand.Seed(time.Now().UnixNano()) //https://stackoverflow.com/questions/12321133/how-to-properly-seed-random-number-generator
 
 	// create and shuffle a standard deck
 	deck := new(playingcards.Deck)
@@ -49,16 +41,20 @@ func main() {
     fmt.Println("Dealing cards...")
     for i:= 0; i<7; i++ {
         for _, player := range players {
-            // TODO: take top card and put it back if RPC fails
+            
+            // take the top card off the deck and try to deal it to a player
             c := deck.TakeTopCard()
             fmt.Printf("Taking top card: " + c.String()+"\n")
             err = player.Call("Deck.AddCardRPC",c,&j)
+            
+            // if dealing fails put the card back on the TOP of the deck
             if err != nil {
                 fmt.Println("Error dealing card: "+err.Error())
-                // TODO: RETURN TO DECK
-                fmt.Println("Card returned to deck.")
+                deck.AddCard(c)
+                fmt.Printf("Card returned to deck, which now has %d cards:\n",deck.NumCards())
+                deck.Show()
             }
-        }i
+        }
     }
 
     // show remaining deck
