@@ -4,12 +4,17 @@ import (
 	"engg415/playingcards"
 	"fmt"
     "net/rpc"
+    "math/rand"
+    "time"
 )
 
 func main() {
     
     var j int // this is silly - RPC interface requires reply var even if not used...
     var err error
+
+    // pull time as a seed for the rng
+    rand.Seed(time.Now().UnixNano()) //https://stackoverflow.com/questions/12321133/how-to-properly-seed-random-number-generator
 
 	// create and shuffle a standard deck
 	deck := new(playingcards.Deck)

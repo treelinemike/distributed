@@ -6,6 +6,7 @@ import (
     "net"
     "net/http"
     "net/rpc"
+    //"errors"
 )
 
 func main() {
@@ -24,7 +25,8 @@ func main() {
     rpc.HandleHTTP()
     l, err := net.Listen("tcp",":1234")
     if err != nil {
-        fmt.Println("Error listening...")
+        fmt.Println("Error listening - is the server already running?")
+        return
     }
     go http.Serve(l,nil)
 
