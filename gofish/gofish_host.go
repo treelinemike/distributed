@@ -14,9 +14,11 @@ func main() {
 	// create and shuffle a standard deck
 	deck := new(playingcards.Deck)
 	deck.Create()
-	deck.Create()
+    fmt.Printf("Deck created with %d cards:\n",deck.NumCards())
+    deck.Show()
     deck.Shuffle()
-    fmt.Printf("Deck has %d cards\n",deck.NumCards())
+    fmt.Println("Deck shuffled:")
+    deck.Show()
 
     // list of all players
     port := "1234"
@@ -40,6 +42,8 @@ func main() {
     for i:= 0; i<7; i++ {
         for _, player := range players {
             // TODO: take top card and put it back if RPC fails
+            c := deck.TakeTopCard()
+            fmt.Printf("Taking top card: " + c.String()+"\n")
             err = player.Call("Deck.AddCardRPC",deck.TakeTopCard(),&j)
             if err != nil {
                 fmt.Println("Error dealing card: "+err.Error())
