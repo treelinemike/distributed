@@ -44,7 +44,6 @@ func main() {
             
             // take the top card off the deck and try to deal it to a player
             c := deck.TakeTopCard()
-            fmt.Printf("Taking top card: " + c.String()+"\n")
             err = player.Call("Deck.AddCardRPC",c,&j)
             
             // if dealing fails put the card back on the TOP of the deck
