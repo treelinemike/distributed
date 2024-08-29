@@ -7,34 +7,20 @@ import (
 	"time"
 )
 
-type GFAPI int
-
 type Deck struct {
 	cards []Card
 }
 
-// wrapper for AddCard() that statisfies the RPC interface
-func (deck *Deck) AddCardRPC(card Card, resp *int) error {
-	err := deck.AddCard(card)
-	if err != nil {
-		return errors.New("Could not add card")
-	}
-	fmt.Println("We got a card! Current hand:")
-	deck.Show()
-	return nil
-}
-
-func (deck *Deck) ResetDeckRPC(args int, resp *int) error {
-	fmt.Println("Resetting deck")
-	deck.cards = nil
-	return nil
-}
-
 func (deck *Deck) AddCard(c Card) error {
 	if c.Val < 1 || c.Val > 13 {
-		return errors.New("Invalid card")
+		return errors.New("invalid card")
 	}
 	deck.cards = append([]Card{c}, deck.cards...)
+	return nil
+}
+
+func (deck *Deck) Reset() error {
+	deck.cards = nil
 	return nil
 }
 
@@ -84,9 +70,4 @@ func (deck *Deck) TakeTopCard() Card {
 	c := deck.cards[0]
 	deck.cards = deck.cards[1:]
 	return c
-}
-
-func (deck *Deck) TakeTopCardRPC(_ int, c *Card) error {
-	*c = deck.TakeTopCard()
-	return nil
 }
