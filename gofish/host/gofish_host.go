@@ -6,37 +6,58 @@ import (
 	"fmt"
 	"log"
 	"net/rpc"
+	"os"
+
+	"github.com/mitchellh/mapstructure"
+	"gopkg.in/yaml.v3"
 )
+
+type (
+	NetworkAddress struct {
+		Address string `mapstructure:"Address"`
+		Port    int    `mapstructure:"Port"`
+	}
+)
+
+type GFConfig struct {
+	Host    NetworkAddress            `mapstructure:"Host"`
+	Players map[string]NetworkAddress `mapstructure:"Players"`
+}
 
 func main() {
 
 	var j int // this is silly - RPC interface requires reply var even if not used...
 	var err error
 
-	/*
-			// TODO: CHECK FOR IP ADDRESSES
-			ifaces, err := net.Interfaces()
-			fmt.Println("error %s",err)
-		    // handle err
-			for _, i := range ifaces {
-				addrs, err := i.Addrs()
-				if err != nil {
-					log.Printf("Error\n")
-					// handle err
-					for _, addr := range addrs {
-						var ip net.IP
-						switch v := addr.(type) {
-						case *net.IPNet:
-							ip = v.IP
-						case *net.IPAddr:
-							ip = v.IP
-						}
-						// process IP address
-						log.Printf("IP addr: %s", ip)
-					}
-				}
-			}
-	*/
+	configFile, err := os.ReadFile("gofish_config.yaml")
+	if err != nil {
+		log.Fatal("Cannot read config file!")
+	}
+
+	var cfg GFConfig
+	var yamlIn interface{}
+
+	err = yaml.Unmarshal(configFile, &yamlIn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{WeaklyTypedInput: true, Result: &cfg})
+	err = decoder.Decode(yamlIn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Print out the new struct
+	fmt.Printf("%+v\n", cfg)
+
+	fmt.Printf("Config file host address: %s:%d\n", cfg.Host.Address, cfg.Host.Port)
+	for player := range cfg.Players {
+
+		fmt.Printf("Player name: %s on %s:%d\n", player, cfg.Players[player].Address, cfg.Players[player].Port)
+
+	}
+	fmt.Printf("first player address: %s\n", cfg.Players["Player3"].Address)
 
 	// create and shuffle a standard deck
 	deck := new(playingcards.Deck)

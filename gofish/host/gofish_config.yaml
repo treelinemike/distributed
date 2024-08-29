@@ -1,0 +1,13 @@
+Host:
+  Address: 192.168.10.100
+  Port: 4040
+Players:
+  Player0:
+    Address: localhost
+    Port: 1234
+  Player1:
+    Address: 192.168.10.10
+    Port: 1234
+  Player2:
+    Address: 192.168.10.20
+    Port: 1234

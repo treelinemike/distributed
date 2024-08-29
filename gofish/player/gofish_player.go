@@ -11,15 +11,8 @@ func main() {
 
 	fmt.Println("Starting player")
 
-	// create a hand as just an empty deck
-	//hand := new(playingcards.Deck)
-	//tc := new(playingcards.TestCard)
-	//thisCard := new(playingcards.Card)
-	//hand.AddCard(*thisCard)
-	//hand.Show()
-
+	// create and register player API
 	thisapi := new(GFPlayerAPI)
-
 	rpc.Register(thisapi)
 	rpc.HandleHTTP()
 	l, err := net.Listen("tcp", ":1234")
@@ -28,8 +21,7 @@ func main() {
 		return
 	}
 	go http.Serve(l, nil)
-
-	fmt.Println("Waiting for hand to be dealt")
+	fmt.Println("Ready to play!")
 
 	// TODO: Find a better way to do this!
 	for {
