@@ -8,9 +8,9 @@ import (
 
 type GFPlayerAPI int
 
-var hand = new(playingcards.Deck)
+var hand = new(playingcards.Deck) // it may seem strange that 1) we don't use the int value of the GFPlayerAPI type when instantiated in gofish_player.go, and 2) that our methods on the GFPlayerAPI type are all set up to act on the unexported hand instance of playingcards.Deck
 
-// wrapper for AddCard() that statisfies the RPC interface
+// RPC wrapper for playingcards.Deck.AddCard()
 func (gfapi *GFPlayerAPI) AddCard(card playingcards.Card, resp *int) error {
 	err := hand.AddCard(card)
 	if err != nil {
@@ -21,12 +21,14 @@ func (gfapi *GFPlayerAPI) AddCard(card playingcards.Card, resp *int) error {
 	return nil
 }
 
+// RPC wrapper for playingcards.Deck.Reset()
 func (gfapi *GFPlayerAPI) ResetHand(args int, resp *int) error {
 	fmt.Println("Resetting deck")
 	hand.Reset()
 	return nil
 }
 
+// RPC wrapper for playingcards.Deck.TakeTopCard()
 func (gfapi *GFPlayerAPI) TakeTopCard(_ int, c *playingcards.Card) error {
 	*c = hand.TakeTopCard()
 	return nil
