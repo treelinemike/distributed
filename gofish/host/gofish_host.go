@@ -61,7 +61,7 @@ func main() {
 			continue
 		}
 		players = append(players, client)
-		err = client.Call("GFAPI.ResetDeckRPC", j, &j)
+		err = client.Call("GFPlayerAPI.ResetHand", j, &j)
 		if err != nil {
 			fmt.Println("Couldn't reset deck")
 		}
@@ -74,7 +74,7 @@ func main() {
 
 			// take the top card off the deck and try to deal it to a player
 			c := deck.TakeTopCard()
-			err = player.Call("GFAPI.AddCardRPC", c, &j)
+			err = player.Call("GFPlayerAPI.AddCard", c, &j)
 
 			// if dealing fails put the card back on the TOP of the deck
 			if err != nil {
