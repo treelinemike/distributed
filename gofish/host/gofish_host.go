@@ -6,58 +6,20 @@ import (
 	"fmt"
 	"log"
 	"net/rpc"
-	"os"
-
-	"github.com/mitchellh/mapstructure"
-	"gopkg.in/yaml.v3"
 )
-
-type (
-	NetworkAddress struct {
-		Address string `mapstructure:"Address"`
-		Port    int    `mapstructure:"Port"`
-	}
-)
-
-type GFConfig struct {
-	Host    NetworkAddress            `mapstructure:"Host"`
-	Players map[string]NetworkAddress `mapstructure:"Players"`
-}
 
 func main() {
 
 	var j int // this is silly - RPC interface requires reply var even if not used...
 	var err error
 
-	configFile, err := os.ReadFile("gofish_config.yaml")
-	if err != nil {
-		log.Fatal("Cannot read config file!")
-	}
-
-	var cfg GFConfig
-	var yamlIn interface{}
-
-	err = yaml.Unmarshal(configFile, &yamlIn)
+	// load host and player IP addresses and ports from YAML config file
+	var HostIP NetworkAddress
+	var PlayerIP = make([]NetworkAddress, 0)
+	err = LoadGFConfig("gofish_config.yaml", &HostIP, &PlayerIP)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{WeaklyTypedInput: true, Result: &cfg})
-	err = decoder.Decode(yamlIn)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Print out the new struct
-	fmt.Printf("%+v\n", cfg)
-
-	fmt.Printf("Config file host address: %s:%d\n", cfg.Host.Address, cfg.Host.Port)
-	for player := range cfg.Players {
-
-		fmt.Printf("Player name: %s on %s:%d\n", player, cfg.Players[player].Address, cfg.Players[player].Port)
-
-	}
-	fmt.Printf("first player address: %s\n", cfg.Players["Player3"].Address)
 
 	// create and shuffle a standard deck
 	deck := new(playingcards.Deck)
@@ -68,17 +30,13 @@ func main() {
 	log.Println("Deck shuffled:")
 	deck.Show()
 
-	// list of all players
-	port := "1234"
-	players_ip := [...]string{"localhost", "192.168.10.10", "192.168.10.20"}
-
 	// open network connections to all players
 	log.Println("Connecting to remote player servers...")
 	var players []*rpc.Client
-	for _, ip := range players_ip {
-		client, err := rpc.DialHTTP("tcp", ip+":"+port)
+	for _, playerip := range PlayerIP {
+		client, err := rpc.DialHTTP("tcp", playerip.Address+":"+playerip.Port)
 		if err != nil {
-			log.Println("Error connecting to remote server: " + ip)
+			log.Println("Error connecting to remote server: " + playerip.Address)
 			continue
 		}
 		players = append(players, client)

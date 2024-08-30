@@ -11,7 +11,7 @@ type GFPlayerAPI int
 var hand = new(playingcards.Deck) // it may seem strange that 1) we don't use the int value of the GFPlayerAPI type when instantiated in gofish_player.go, and 2) that our methods on the GFPlayerAPI type are all set up to act on the unexported hand instance of playingcards.Deck
 
 // RPC wrapper for playingcards.Deck.AddCard()
-func (gfapi *GFPlayerAPI) AddCard(card playingcards.Card, resp *int) error {
+func (gfapi *GFPlayerAPI) AddCardToHand(card playingcards.Card, resp *int) error {
 	err := hand.AddCard(card)
 	if err != nil {
 		return errors.New("could not add card")
