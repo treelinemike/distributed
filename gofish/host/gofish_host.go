@@ -53,7 +53,7 @@ func main() {
 
 			// take the top card off the deck and try to deal it to a player
 			c := deck.TakeTopCard()
-			err = player.Call("GFPlayerAPI.AddCard", c, &j)
+			err = player.Call("GFPlayerAPI.AddCardToHand", c, &j)
 
 			// if dealing fails put the card back on the TOP of the deck
 			if err != nil {
