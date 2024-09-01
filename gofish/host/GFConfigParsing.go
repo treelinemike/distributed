@@ -1,6 +1,7 @@
 package main
 
 import (
+	"engg415/gofish/gfcommon"
 	"log"
 	"os"
 	"sort"
@@ -9,20 +10,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// see: https://betterprogramming.pub/parsing-and-creating-yaml-in-go-crash-course-2ec10b7db850
-type (
-	NetworkAddress struct {
-		Address string `mapstructure:"Address"`
-		Port    string `mapstructure:"Port"`
-	}
-)
-
 type GFConfig struct {
-	Host    NetworkAddress            `mapstructure:"Host"`
-	Players map[string]NetworkAddress `mapstructure:"Players"`
+	Host    gfcommon.NetworkAddress            `mapstructure:"Host"`
+	Players map[string]gfcommon.NetworkAddress `mapstructure:"Players"`
 }
 
-func LoadGFConfig(configFileName string, HostIP *NetworkAddress, PlayerIP *[]NetworkAddress) error {
+// see: https://betterprogramming.pub/parsing-and-creating-yaml-in-go-crash-course-2ec10b7db850
+func LoadGFConfig(configFileName string, HostIP *gfcommon.NetworkAddress, PlayerIP *[]gfcommon.NetworkAddress) error {
 
 	configFile, err := os.ReadFile(configFileName)
 	if err != nil {

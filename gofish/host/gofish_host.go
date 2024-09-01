@@ -1,7 +1,9 @@
 package main
 
 import (
+	"engg415/gofish/gfcommon"
 	"engg415/playingcards"
+
 	//"errors"
 	"fmt"
 	"log"
@@ -10,12 +12,12 @@ import (
 
 func main() {
 
-	var j int // this is silly - RPC interface requires reply var even if not used...
+	var j int // this is silly - net/rpc interface requires reply var even if not used...
 	var err error
 
 	// load host and player IP addresses and ports from YAML config file
-	var HostIP NetworkAddress
-	var PlayerIP = make([]NetworkAddress, 0)
+	var HostIP gfcommon.NetworkAddress
+	var PlayerIP = make([]gfcommon.NetworkAddress, 0)
 	err = LoadGFConfig("gofish_config.yaml", &HostIP, &PlayerIP)
 	if err != nil {
 		log.Fatal(err)
@@ -29,6 +31,11 @@ func main() {
 	deck.Shuffle()
 	log.Println("Deck shuffled:")
 	deck.Show()
+
+	type dialResult struct {
+		client *rpc.Client
+		err    error
+	}
 
 	// open network connections to all players
 	log.Println("Connecting to remote player servers...")
