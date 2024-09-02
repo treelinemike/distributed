@@ -50,6 +50,11 @@ func main() {
 		ConnectedPlayerIP = append(ConnectedPlayerIP, playerip)
 	}
 
+	// make sure we have some players
+	if len(players) == 0 {
+		log.Fatal("No players connected")
+	}
+
 	// configure each player
 	for i, player := range players {
 
