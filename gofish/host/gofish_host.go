@@ -32,24 +32,36 @@ func main() {
 	log.Println("Deck shuffled:")
 	deck.Show()
 
-	type dialResult struct {
-		client *rpc.Client
-		err    error
-	}
-
 	// open network connections to all players
 	log.Println("Connecting to remote player servers...")
 	var players []*rpc.Client
-	for _, playerip := range PlayerIP {
+	for i, playerip := range PlayerIP {
+
+		// connect to player
 		client, err := rpc.DialHTTP("tcp", playerip.Address+":"+playerip.Port)
 		if err != nil {
 			log.Println("Error connecting to remote server: " + playerip.Address)
 			continue
 		}
 		players = append(players, client)
+
+		// reset player hand
 		err = client.Call("GFPlayerAPI.ResetHand", j, &j)
 		if err != nil {
-			fmt.Println("Couldn't reset deck")
+			fmt.Println(`Couldn't reset deck`)
+		}
+
+		// set player config
+		c := new(gfcommon.GFPlayerConfig)
+		c.Host = HostIP
+		for j, otherplayerip := range PlayerIP {
+			if j != i {
+				c.OtherPlayers = append(c.OtherPlayers, otherplayerip)
+			}
+		}
+		err = client.Call("GFPlayerAPI.SetConfig", c, &j)
+		if err != nil {
+			log.Fatal("Could not set player config via RPC!")
 		}
 	}
 

@@ -5,4 +5,8 @@ type (
 		Address string `mapstructure:"Address"`
 		Port    string `mapstructure:"Port"`
 	}
+	GFPlayerConfig struct {
+		Host         NetworkAddress
+		OtherPlayers []NetworkAddress
+	}
 )
