@@ -5,6 +5,7 @@ import (
 	"engg415/playingcards"
 	"errors"
 	"fmt"
+	"log"
 )
 
 type GFPlayerAPI int
@@ -14,8 +15,7 @@ var config = new(gfcommon.GFPlayerConfig)
 
 func (gfapi *GFPlayerAPI) SetConfig(c gfcommon.GFPlayerConfig, resp *int) error {
 	*config = c
-	fmt.Println("Contents of config:")
-	fmt.Println(*config)
+	log.Println("Config set")
 	return nil
 }
 

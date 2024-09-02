@@ -18,6 +18,7 @@ func main() {
 	// load host and player IP addresses and ports from YAML config file
 	var HostIP gfcommon.NetworkAddress
 	var PlayerIP = make([]gfcommon.NetworkAddress, 0)
+	var ConnectedPlayerIP = make([]gfcommon.NetworkAddress, 0)
 	err = LoadGFConfig("gofish_config.yaml", &HostIP, &PlayerIP)
 	if err != nil {
 		log.Fatal(err)
@@ -35,7 +36,7 @@ func main() {
 	// open network connections to all players
 	log.Println("Connecting to remote player servers...")
 	var players []*rpc.Client
-	for i, playerip := range PlayerIP {
+	for _, playerip := range PlayerIP {
 
 		// connect to player
 		client, err := rpc.DialHTTP("tcp", playerip.Address+":"+playerip.Port)
@@ -43,29 +44,40 @@ func main() {
 			log.Println("Error connecting to remote server: " + playerip.Address)
 			continue
 		}
+
+		// note: players and ConnectedPlayerIP are always 1:1
 		players = append(players, client)
+		ConnectedPlayerIP = append(ConnectedPlayerIP, playerip)
+	}
+
+	// configure each player
+	for i, player := range players {
+
+		fmt.Printf("Setting config for player: %s\n", ConnectedPlayerIP[i].Address)
 
 		// reset player hand
-		err = client.Call("GFPlayerAPI.ResetHand", j, &j)
+		err = player.Call("GFPlayerAPI.ResetHand", j, &j)
 		if err != nil {
-			fmt.Println(`Couldn't reset deck`)
+			log.Fatal("Couldn't reset deck")
 		}
 
-		// set player config
-		c := new(gfcommon.GFPlayerConfig)
-		c.Host = HostIP
-		for j, otherplayerip := range PlayerIP {
+		// assemble list of other players
+		playerConfig := new(gfcommon.GFPlayerConfig)
+		playerConfig.Host = HostIP
+		for j, otherplayerip := range ConnectedPlayerIP {
 			if j != i {
-				c.OtherPlayers = append(c.OtherPlayers, otherplayerip)
+				playerConfig.OtherPlayers = append(playerConfig.OtherPlayers, otherplayerip)
 			}
 		}
-		err = client.Call("GFPlayerAPI.SetConfig", c, &j)
+
+		// set list of other players via RPC
+		err = player.Call("GFPlayerAPI.SetConfig", playerConfig, &j)
 		if err != nil {
-			log.Fatal("Could not set player config via RPC!")
+			log.Fatal("Couldn't set player config")
 		}
 	}
 
-	// deal seven cards to each player
+	// deal seven cards to each player off the deck
 	log.Println("Dealing cards...")
 	for i := 0; i < 7; i++ {
 		for _, player := range players {
