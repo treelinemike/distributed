@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -9,7 +10,7 @@ import (
 
 func main() {
 
-	fmt.Println("Starting player")
+	log.Println("Starting player")
 
 	// create and register player API
 	thisapi := new(GFPlayerAPI)
@@ -17,11 +18,11 @@ func main() {
 	rpc.HandleHTTP()
 	l, err := net.Listen("tcp", ":1234")
 	if err != nil {
-		fmt.Println("Error listening - is the server already running?")
+		log.Fatal("Error listening - is the server already running?")
 		return
 	}
 	go http.Serve(l, nil)
-	fmt.Println("Ready to play!")
+	log.Println("Ready to play")
 
 	// TODO: Find a better way to do this!
 	for {

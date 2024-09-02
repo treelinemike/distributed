@@ -4,7 +4,6 @@ import (
 	"engg415/gofish/gfcommon"
 	"engg415/playingcards"
 	"errors"
-	"fmt"
 	"log"
 )
 
@@ -15,7 +14,7 @@ var config = new(gfcommon.GFPlayerConfig)
 
 func (gfapi *GFPlayerAPI) SetConfig(c gfcommon.GFPlayerConfig, resp *int) error {
 	*config = c
-	log.Println("Config set")
+	log.Println("Config set via RPC")
 	return nil
 }
 
@@ -25,15 +24,14 @@ func (gfapi *GFPlayerAPI) AddCardToHand(card playingcards.Card, resp *int) error
 	if err != nil {
 		return errors.New("could not add card")
 	}
-	fmt.Println("We got a card! Current hand:")
-	hand.Show()
+	log.Println("Received a card via RPC")
 	return nil
 }
 
 // RPC wrapper for playingcards.Deck.Reset()
 func (gfapi *GFPlayerAPI) ResetHand(args int, resp *int) error {
-	fmt.Println("Resetting deck")
 	hand.Reset()
+	log.Println("Deck reset via RPC")
 	return nil
 }
 
