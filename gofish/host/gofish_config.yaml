@@ -9,5 +9,8 @@ Players:
     Address: 192.168.10.10
     Port: 1234
   Player2:
-    Address: 192.168.10.20
+    Address: 192.168.10.11
     Port: 1234
+  Player3:
+    Address: 192.168.10.12
+    Port: 1234    
