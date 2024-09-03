@@ -58,7 +58,7 @@ func main() {
 	// configure each player
 	for i, player := range players {
 
-		fmt.Printf("Setting config for player: %s\n", ConnectedPlayerIP[i].Address)
+		log.Printf("Setting config for player: %s\n", ConnectedPlayerIP[i].Address)
 
 		// reset player hand
 		err = player.Call("GFPlayerAPI.ResetHand", j, &j)
@@ -104,4 +104,22 @@ func main() {
 	// show remaining deck
 	log.Printf("All hands dealt. Remaining deck has %d cards:\n", deck.NumCards())
 	deck.Show()
+
+	// cycle through each player
+	//doneflag := false
+	doneflag := false
+	playerIdx := 0
+	for !doneflag {
+		fmt.Printf("Activiating player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
+		err = players[playerIdx].Call("GFPlayerAPI.TakeTurn", nil, &j)
+		if err != nil {
+			log.Fatalf("Could not exectue TakeTurn RPC for player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
+		}
+
+		playerIdx++
+		if playerIdx == len(players) {
+			playerIdx = 0
+			doneflag = true
+		}
+	}
 }

@@ -5,6 +5,8 @@ import (
 	"engg415/playingcards"
 	"errors"
 	"log"
+	"os/exec"
+	"time"
 )
 
 type GFPlayerAPI int
@@ -38,5 +40,19 @@ func (gfapi *GFPlayerAPI) ResetHand(args int, resp *int) error {
 // RPC wrapper for playingcards.Deck.TakeTopCard()
 func (gfapi *GFPlayerAPI) TakeTopCard(_ int, c *playingcards.Card) error {
 	*c = hand.TakeTopCard()
+	return nil
+}
+
+func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *int) error {
+	log.Println("Taking my turn...")
+	_, err := exec.Command("blink1-on.sh").Output()
+	if err != nil {
+		log.Println("Could not turn on blink(1) indicator")
+	}
+	time.Sleep(2 * time.Second)
+	_, err = exec.Command("blink1-off.sh").Output()
+	if err != nil {
+		log.Println("Could not turn off blink(1) indicator")
+	}
 	return nil
 }
