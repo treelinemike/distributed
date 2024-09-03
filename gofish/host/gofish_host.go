@@ -109,16 +109,22 @@ func main() {
 	//doneflag := false
 	doneflag := false
 	playerIdx := 0
+	rounds := 0
 	for !doneflag {
 		fmt.Printf("Activiating player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
-		err = players[playerIdx].Call("GFPlayerAPI.TakeTurn", nil, &j)
+		err = players[playerIdx].Call("GFPlayerAPI.TakeTurn", j, &j)
 		if err != nil {
+			log.Print(err)
 			log.Fatalf("Could not exectue TakeTurn RPC for player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
 		}
 
 		playerIdx++
 		if playerIdx == len(players) {
 			playerIdx = 0
+			rounds++
+		}
+
+		if rounds == 4 {
 			doneflag = true
 		}
 	}

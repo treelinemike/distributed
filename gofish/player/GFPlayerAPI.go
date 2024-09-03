@@ -44,7 +44,7 @@ func (gfapi *GFPlayerAPI) TakeTopCard(_ int, c *playingcards.Card) error {
 }
 
 func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *int) error {
-	log.Println("Taking my turn...")
+	log.Println("Taking turn")
 	_, err := exec.Command("blink1-on.sh").Output()
 	if err != nil {
 		log.Println("Could not turn on blink(1) indicator")
@@ -54,5 +54,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *int) error {
 	if err != nil {
 		log.Println("Could not turn off blink(1) indicator")
 	}
+	log.Printf("Turn complete, hand contains %d cards\n", hand.NumCards())
+	*resp = hand.NumCards()
 	return nil
 }
