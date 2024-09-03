@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -22,7 +22,7 @@ func main() {
 		return
 	}
 	go http.Serve(l, nil)
-	log.Println("Ready to play")
+	fmt.Println("Ready to play")
 
 	// TODO: Find a better way to do this!
 	for {
