@@ -3,8 +3,6 @@ package main
 import (
 	"engg415/gofish/gfcommon"
 
-	//"errors"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -37,7 +35,7 @@ func main() {
 		return
 	}
 	go http.Serve(l, nil)
-	fmt.Println("Ready to play")
+	log.Println("Ready to play")
 
 	// create and shuffle a standard deck
 	deck.Create()
@@ -63,6 +61,7 @@ func main() {
 	}
 
 	// make sure we have some players
+	// TODO: do we want two at minimum?
 	if len(players) == 0 {
 		log.Fatal("No players connected")
 	}
@@ -94,9 +93,15 @@ func main() {
 		}
 	}
 
-	// deal seven cards to each player off the deck
+	// deal cards to each player off the deck
+	var numCardsToDeal int
+	if len(players) < 3 {
+		numCardsToDeal = 7
+	} else {
+		numCardsToDeal = 5
+	}
 	log.Println("Dealing cards...")
-	for i := 0; i < 7; i++ {
+	for i := 0; i < numCardsToDeal; i++ {
 		for _, player := range players {
 
 			// take the top card off the deck and try to deal it to a player
@@ -105,7 +110,7 @@ func main() {
 
 			// if dealing fails put the card back on the TOP of the deck
 			if err != nil {
-				fmt.Println("Error dealing card: " + err.Error())
+				log.Println("Error dealing card: " + err.Error())
 				deck.AddCard(c)
 				log.Printf("Card returned to deck, which now has %d cards: %s\n", deck.NumCards(), deck.String())
 

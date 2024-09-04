@@ -4,7 +4,6 @@ import (
 	"engg415/gofish/gfcommon"
 	"engg415/playingcards"
 	"errors"
-	"fmt"
 	"log"
 	"math/rand"
 	"net/rpc"
@@ -139,9 +138,9 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 			log.Printf("Requesting card value %d from player index %d\n", valToRequest, playerToRequestFrom)
 		}
 
-		fmt.Printf("Hand before books removed: %s\n", hand.String())
+		log.Printf("Hand before books removed: %s\n", hand.String())
 		removeBooksFromHand()
-		fmt.Printf("Hand after books removed: %s\n", hand.String())
+		log.Printf("Hand after books removed: %s\n", hand.String())
 		//time.Sleep(5 * time.Second)
 		tryAgain = false
 	}
