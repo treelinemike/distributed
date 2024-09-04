@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/rpc"
 	"os/exec"
 )
@@ -81,7 +82,7 @@ func (gfapi *GFPlayerAPI) TakeTopCard(_ int, c *playingcards.Card) error {
 	return nil
 }
 
-func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFReturn) error {
+func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 
 	var j int
 	c := new(playingcards.Card)
@@ -124,6 +125,20 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFReturn) error {
 
 	// query players for cards until our luck runs out
 	for tryAgain {
+
+		// select a card at random from our hand
+		// TODO: we could be smarter about the choice!
+		// but, if a value is repeated in the hand it will be more likely to be chosen, which is good...
+		valToRequest := hand.Cards[rand.Intn(hand.NumCards())].Val
+
+		// request card from a random player
+		// TODO: we could be smarter about this choice as well!
+		// TODO: decide whether to fail if only one player (helpful for debugging to play with deck)
+		if len(config.OtherPlayers) > 0 {
+			log.Printf("Requesting card value %d from player index %d\n", valToRequest, playerToRequestFrom)
+
+		}
+
 		fmt.Printf("Hand before books removed: %s\n", hand.String())
 		removeBooksFromHand()
 		fmt.Printf("Hand after books removed: %s\n", hand.String())

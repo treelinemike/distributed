@@ -1,6 +1,6 @@
 package gfcommon
 
-type GFReturn struct {
+type GFPlayerReturn struct {
 	NumBooks       int
 	NumCardsInHand int
 }
