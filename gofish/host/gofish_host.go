@@ -20,7 +20,7 @@ func main() {
 	var HostIP gfcommon.NetworkAddress
 	var PlayerIP = make([]gfcommon.NetworkAddress, 0)
 	var ConnectedPlayerIP = make([]gfcommon.NetworkAddress, 0)
-	err = LoadGFConfig("gofish_config.yaml", &HostIP, &PlayerIP)
+	err = gfcommon.LoadGFGameConfig("gofish_config.yaml", &HostIP, &PlayerIP)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,11 +40,9 @@ func main() {
 
 	// create and shuffle a standard deck
 	deck.Create()
-	log.Printf("Deck created with %d cards:\n", deck.NumCards())
-	deck.Show()
+	log.Printf("Deck created with %d cards: %s\n", deck.NumCards(), deck.String())
 	deck.Shuffle()
-	log.Println("Deck shuffled:")
-	deck.Show()
+	log.Printf("Deck shuffled: %s", deck.String())
 
 	// open network connections to all players
 	log.Println("Connecting to remote player servers...")
@@ -108,15 +106,14 @@ func main() {
 			if err != nil {
 				fmt.Println("Error dealing card: " + err.Error())
 				deck.AddCard(c)
-				log.Printf("Card returned to deck, which now has %d cards:\n", deck.NumCards())
-				deck.Show()
+				log.Printf("Card returned to deck, which now has %d cards: %s\n", deck.NumCards(), deck.String())
+
 			}
 		}
 	}
 
 	// show remaining deck
-	log.Printf("All hands dealt. Remaining deck has %d cards:\n", deck.NumCards())
-	deck.Show()
+	log.Printf("All hands dealt. Remaining deck has %d cards: %s\n", deck.NumCards(), deck.String())
 
 	// cycle through each player
 	//doneflag := false

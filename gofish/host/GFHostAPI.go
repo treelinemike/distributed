@@ -10,9 +10,12 @@ var deck = new(playingcards.Deck)
 
 // RPC wrapper for TakeTopCard()
 // TODO: put these in a queue to restore if needed?
-func (gfapi *GFHostAPI) TakeTopCard(_ int, c *[]playingcards.Card) error {
+// returns a slice of cards b/c that is easy to check for null, although we could return a card with zero value
+func (gfapi *GFHostAPI) TakeTopCard(_ int, c *playingcards.Card) error {
 	if deck.NumCards() > 0 {
-		*c = append(*c, deck.TakeTopCard())
+		*c = deck.TakeTopCard()
+	} else {
+		c = new(playingcards.Card)
 	}
 	return nil
 }

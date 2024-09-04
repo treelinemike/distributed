@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/rpc"
 	"os/exec"
-	"time"
 )
 
 type GFPlayerAPI int
@@ -16,6 +15,7 @@ type GFPlayerAPI int
 var hand = new(playingcards.Deck) // it may seem strange that 1) we don't use the int value of the GFPlayerAPI type when instantiated in gofish_player.go, and 2) that our methods on the GFPlayerAPI type are all set up to act on the unexported hand instance of playingcards.Deck
 var config = new(gfcommon.GFPlayerConfig)
 var host *rpc.Client
+var numBooks int
 
 // RPC allowing host to set player configuration
 func (gfapi *GFPlayerAPI) SetConfig(c gfcommon.GFPlayerConfig, resp *int) error {
@@ -55,10 +55,12 @@ func (gfapi *GFPlayerAPI) TakeTopCard(_ int, c *playingcards.Card) error {
 	return nil
 }
 
-func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *int) error {
+func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFReturn) error {
 
-	// set up to continue unless we (later) set otherwise
-	tryAgain := true
+	var j int
+	c := new(playingcards.Card)
+	resp = new(gfcommon.GFReturn)
+	tryAgain := true // set up to continue unless we (later) set otherwise
 
 	// handle blink(1) indicator and logging for turn start/end
 	log.Println("Taking turn")
@@ -74,34 +76,32 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *int) error {
 		log.Printf("Turn complete, hand contains %d cards\n", hand.NumCards())
 	}()
 
-	// try to take top card
-	var j int
-	var cards []playingcards.Card
-	err = host.Call("GFHostAPI.TakeTopCard", j, &cards)
-
-	if err != nil {
-		log.Fatal("Error retrieving top card from deck")
-	}
-	switch len(cards) {
-	case 0:
-		log.Printf("Deck is empty, no card added")
-	case 1:
-		// TODO: add card to deck
-		log.Printf("Took top card from deck: %s\n", cards[0].String())
-	default:
-		log.Fatal("Received more than one card from deck")
-	}
-
-	// if hand is empty try to get a card from the deck
+	// if hand is empty, try to take a card from the deck
 	if hand.NumCards() == 0 {
-
+		c = new(playingcards.Card)
+		err = host.Call("GFHostAPI.TakeTopCard", j, c)
+		if err != nil {
+			log.Fatal("Error retrieving top card from deck")
+		}
+		if c.Val == 0 {
+			log.Println("Deck is empty, cannot do anything this turn!")
+			resp.NumBooks = numBooks
+			resp.NumCardsInHand = hand.NumCards()
+			return nil
+		} else {
+			hand.AddCard((*c))
+			log.Printf("Added card, hand is now: %s\n", hand.String())
+		}
 	}
 
-	if tryAgain {
+	// query players for cards until our luck runs out
+	for tryAgain {
+
 		fmt.Println("hello")
 	}
 
-	time.Sleep(2 * time.Second)
-	*resp = hand.NumCards()
+	// return
+	resp.NumBooks = numBooks
+	resp.NumCardsInHand = hand.NumCards()
 	return nil
 }

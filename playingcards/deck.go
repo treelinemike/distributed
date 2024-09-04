@@ -2,7 +2,6 @@ package playingcards
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 	"time"
 )
@@ -56,14 +55,13 @@ func (deck Deck) NumCards() int {
 	return len(deck.cards)
 }
 
-func (deck Deck) Show() error {
+func (deck Deck) String() (s string) {
 	space := ""
 	for i := range deck.cards {
-		fmt.Print(space, deck.cards[i].String())
+		s = s + space + deck.cards[i].String()
 		space = " "
 	}
-	fmt.Println()
-	return nil
+	return
 }
 
 func (deck *Deck) TakeTopCard() Card {
