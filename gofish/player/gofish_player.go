@@ -10,9 +10,8 @@ import (
 
 func main() {
 
-	log.Println("Starting player")
-
 	// create and register player API
+	log.Println("Registering player API")
 	thisapi := new(GFPlayerAPI)
 	rpc.Register(thisapi)
 	rpc.HandleHTTP()

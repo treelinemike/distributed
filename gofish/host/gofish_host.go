@@ -2,11 +2,12 @@ package main
 
 import (
 	"engg415/gofish/gfcommon"
-	"engg415/playingcards"
 
 	//"errors"
 	"fmt"
 	"log"
+	"net"
+	"net/http"
 	"net/rpc"
 )
 
@@ -24,8 +25,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// create and register host API
+	log.Println("Registering host API")
+	thisapi := new(GFHostAPI)
+	rpc.Register(thisapi)
+	rpc.HandleHTTP()
+	l, err := net.Listen("tcp", ":"+HostIP.Port)
+	if err != nil {
+		log.Fatal("Error listening - is the server already running?")
+		return
+	}
+	go http.Serve(l, nil)
+	fmt.Println("Ready to play")
+
 	// create and shuffle a standard deck
-	deck := new(playingcards.Deck)
 	deck.Create()
 	log.Printf("Deck created with %d cards:\n", deck.NumCards())
 	deck.Show()
