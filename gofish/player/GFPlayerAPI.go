@@ -128,15 +128,15 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 
 		// select a card at random from our hand
 		// TODO: we could be smarter about the choice!
-		// but, if a value is repeated in the hand it will be more likely to be chosen, which is good...
+		// but, values repeated in hand are more likely to be chosen which is good...
 		valToRequest := hand.Cards[rand.Intn(hand.NumCards())].Val
 
-		// request card from a random player
+		// select a random player to request cards from
 		// TODO: we could be smarter about this choice as well!
-		// TODO: decide whether to fail if only one player (helpful for debugging to play with deck)
+		// TODO: decide whether to fail if only one player (zero others), not failing can be helpful for debugging - play with deck only
 		if len(config.OtherPlayers) > 0 {
+			playerToRequestFrom := rand.Intn(len(config.OtherPlayers))
 			log.Printf("Requesting card value %d from player index %d\n", valToRequest, playerToRequestFrom)
-
 		}
 
 		fmt.Printf("Hand before books removed: %s\n", hand.String())
