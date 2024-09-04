@@ -17,6 +17,32 @@ var config = new(gfcommon.GFPlayerConfig)
 var host *rpc.Client
 var numBooks int
 
+func removeBooksFromHand() error {
+
+	// create a map of (card rank) int -> (count) int
+	counts := make(map[int]int)
+	for _, c := range hand.Cards {
+		counts[c.Val] += 1
+	}
+
+	// remove any books
+	for k, v := range counts {
+		if v == 4 {
+			newHand := make([]playingcards.Card, 0)
+			for _, thisCard := range hand.Cards {
+				if thisCard.Val != k {
+					newHand = append(newHand, thisCard)
+				}
+			}
+			hand.Cards = newHand
+			numBooks += 1
+		}
+	}
+
+	// return
+	return nil
+}
+
 // RPC allowing host to set player configuration
 func (gfapi *GFPlayerAPI) SetConfig(c gfcommon.GFPlayerConfig, resp *int) error {
 	*config = c
@@ -59,7 +85,6 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFReturn) error {
 
 	var j int
 	c := new(playingcards.Card)
-	resp = new(gfcommon.GFReturn)
 	tryAgain := true // set up to continue unless we (later) set otherwise
 
 	// handle blink(1) indicator and logging for turn start/end
@@ -94,10 +119,16 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFReturn) error {
 		}
 	}
 
+	// remove books (really only applicable on first turn in rare case that we're dealt a book)
+	removeBooksFromHand()
+
 	// query players for cards until our luck runs out
 	for tryAgain {
-
-		fmt.Println("hello")
+		fmt.Printf("Hand before books removed: %s\n", hand.String())
+		removeBooksFromHand()
+		fmt.Printf("Hand after books removed: %s\n", hand.String())
+		//time.Sleep(5 * time.Second)
+		tryAgain = false
 	}
 
 	// return

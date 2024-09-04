@@ -14,6 +14,7 @@ import (
 func main() {
 
 	var j int // this is silly - net/rpc interface requires reply var even if not used...
+	var gfret gfcommon.GFReturn
 	var err error
 
 	// load host and player IP addresses and ports from YAML config file
@@ -121,12 +122,14 @@ func main() {
 	playerIdx := 0
 	rounds := 0
 	for !doneflag {
-		fmt.Printf("Activiating player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
-		err = players[playerIdx].Call("GFPlayerAPI.TakeTurn", j, &j)
+		log.Printf("Activiating player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
+
+		err = players[playerIdx].Call("GFPlayerAPI.TakeTurn", j, &gfret)
 		if err != nil {
 			log.Print(err)
 			log.Fatalf("Could not exectue TakeTurn RPC for player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
 		}
+		log.Printf("Turn complete for player %d (%s): has %d books and %d cards in hand\n", playerIdx, ConnectedPlayerIP[playerIdx].Address, gfret.NumBooks, gfret.NumCardsInHand)
 
 		playerIdx++
 		if playerIdx == len(players) {
