@@ -88,7 +88,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 	tryAgain := true // set up to continue unless we (later) set otherwise
 
 	// handle blink(1) indicator and logging for turn start/end
-	log.Println("Taking turn")
+	log.Printf("Starting turn with %d books and hand: %s\n", numBooks, hand.String())
 	_, err := exec.Command("blink1-on.sh").Output()
 	if err != nil {
 		log.Println("Could not turn on blink(1) indicator")
@@ -98,7 +98,8 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		if err != nil {
 			log.Println("Could not turn off blink(1) indicator")
 		}
-		log.Printf("Turn complete, hand contains %d cards\n", hand.NumCards())
+		log.Printf("Ending turn with %d books and hand: %s\n", numBooks, hand.String())
+
 	}()
 
 	// if hand is empty, try to take a card from the deck
@@ -136,12 +137,13 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		if len(config.OtherPlayers) > 0 {
 			playerToRequestFrom := rand.Intn(len(config.OtherPlayers))
 			log.Printf("Requesting card value %d from player index %d\n", valToRequest, playerToRequestFrom)
+
+			// connect to other player
+			// TODO: REQUEST CARDS RPC CALL
+
 		}
 
-		log.Printf("Hand before books removed: %s\n", hand.String())
-		removeBooksFromHand()
-		log.Printf("Hand after books removed: %s\n", hand.String())
-		//time.Sleep(5 * time.Second)
+		//removeBooksFromHand()
 		tryAgain = false
 	}
 
