@@ -185,7 +185,6 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 			if err != nil {
 				log.Println("Error connecting to client: " + config.OtherPlayers[playerToRequestFrom].Address)
 			}
-			log.Println("Connected to remote player")
 
 			// try to get cards from opponent
 			newCards := make([]playingcards.Card, 0)
@@ -202,14 +201,13 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 				removeBooksFromHand()
 			} else {
 				// try to pull a card from the deck
-				log.Println("Attempting to pull card from deck")
 				c = new(playingcards.Card) // need to reset card b/c a zero value in struct from RPC won't get gobbed, so old value will persist!
 				err = host.Call("GFHostAPI.TakeTopCard", j, c)
 				if err != nil {
 					log.Fatal("Error retrieving top card from deck")
 				}
 				if c.Val == 0 {
-					log.Println("Deck is empty, cannot continue this turn!")
+					log.Println("Could not pull from deck (deck is empty), cannot continue this turn!")
 					resp.NumBooks = numBooks
 					resp.NumCardsInHand = hand.NumCards()
 					return nil
@@ -221,7 +219,6 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 						tryAgain = false
 					}
 					hand.AddCard((*c))
-					log.Printf("Added card, hand is now: %s\n", hand.String())
 					removeBooksFromHand()
 				}
 			}
