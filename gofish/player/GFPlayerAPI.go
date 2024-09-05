@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/rpc"
 	"os/exec"
+	"time"
 )
 
 type GFPlayerAPI int
@@ -145,6 +146,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		log.Println("Could not turn on blink(1) indicator")
 	}
 	defer func() {
+		time.Sleep(2 * time.Second)
 		_, err = exec.Command("blink1-off.sh").Output()
 		if err != nil {
 			log.Println("Could not turn off blink(1) indicator")
