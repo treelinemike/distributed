@@ -25,7 +25,7 @@ func removeBooksFromHand() error {
 		counts[c.Val] += 1
 	}
 
-	// remove any books
+	// remove any books from hand
 	for k, v := range counts {
 		if v == 4 {
 			newHand := make([]playingcards.Card, 0)
@@ -72,6 +72,7 @@ func (gfapi *GFPlayerAPI) AddCardToHand(card playingcards.Card, resp *int) error
 // RPC wrapper for playingcards.Deck.Reset()
 func (gfapi *GFPlayerAPI) ResetHand(args int, resp *int) error {
 	hand.Reset()
+	numBooks = 0
 	log.Println("Deck reset via RPC")
 	return nil
 }
@@ -133,6 +134,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 				log.Println("Deck is empty, cannot do anything this turn!")
 				resp.NumBooks = numBooks
 				resp.NumCardsInHand = hand.NumCards()
+				log.Println(resp)
 				return nil
 			} else {
 				hand.AddCard((*c))
@@ -185,6 +187,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 					log.Println("Deck is empty, cannot continue this turn!")
 					resp.NumBooks = numBooks
 					resp.NumCardsInHand = hand.NumCards()
+					log.Println(resp)
 					return nil
 				} else {
 					log.Printf("Pulled a card from the deck: %s\n", c.String())
@@ -204,5 +207,6 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 	// return
 	resp.NumBooks = numBooks
 	resp.NumCardsInHand = hand.NumCards()
+	log.Println(resp)
 	return nil
 }
