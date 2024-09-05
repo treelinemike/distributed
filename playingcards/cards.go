@@ -53,21 +53,6 @@ func NumToCardChar(val int) string {
 func (c Card) String() string {
 	var str string
 	str += NumToCardChar(c.Val)
-
-	if c.Val > 1 && c.Val < 11 {
-		str += strconv.Itoa(c.Val)
-	} else {
-		switch c.Val {
-		case 1:
-			str += "A"
-		case 11:
-			str += "J"
-		case 12:
-			str += "Q"
-		case 13:
-			str += "K"
-		}
-	}
 	switch c.CardSuit {
 	case Clubs:
 		str += "\u2663"
