@@ -116,32 +116,31 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 			log.Println("Could not turn off blink(1) indicator")
 		}
 		log.Printf("Ending turn with %d books and hand: %s\n", numBooks, hand.String())
-
 	}()
-
-	// if hand is empty, try to take a card from the deck
-	if hand.NumCards() == 0 {
-		c = new(playingcards.Card)
-		err = host.Call("GFHostAPI.TakeTopCard", j, c)
-		if err != nil {
-			log.Fatal("Error retrieving top card from deck")
-		}
-		if c.Val == 0 {
-			log.Println("Deck is empty, cannot do anything this turn!")
-			resp.NumBooks = numBooks
-			resp.NumCardsInHand = hand.NumCards()
-			return nil
-		} else {
-			hand.AddCard((*c))
-			log.Printf("Added card, hand is now: %s\n", hand.String())
-		}
-	}
-
-	// remove books (really only applicable on first turn in rare case that we're dealt a book)
-	removeBooksFromHand()
 
 	// query players for cards until our luck runs out
 	for tryAgain {
+
+		// if hand is empty, try to take a card from the deck
+		if hand.NumCards() == 0 {
+			c = new(playingcards.Card)
+			err = host.Call("GFHostAPI.TakeTopCard", j, c)
+			if err != nil {
+				log.Fatal("Error retrieving top card from deck")
+			}
+			if c.Val == 0 {
+				log.Println("Deck is empty, cannot do anything this turn!")
+				resp.NumBooks = numBooks
+				resp.NumCardsInHand = hand.NumCards()
+				return nil
+			} else {
+				hand.AddCard((*c))
+				log.Printf("Added card, hand is now: %s\n", hand.String())
+			}
+		}
+
+		// remove books (really only applicable on first turn in rare case that we're dealt a book)
+		removeBooksFromHand()
 
 		// select a card at random from our hand
 		// TODO: we could be smarter about the choice!

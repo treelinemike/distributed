@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/rpc"
+	"slices"
 )
 
 func main() {
@@ -19,6 +20,8 @@ func main() {
 	var HostIP gfcommon.NetworkAddress
 	var PlayerIP = make([]gfcommon.NetworkAddress, 0)
 	var ConnectedPlayerIP = make([]gfcommon.NetworkAddress, 0)
+	handSizes := make([]int, 0)
+	numBooks := make([]int, 0)
 	err = gfcommon.LoadGFGameConfig("gofish_config.yaml", &HostIP, &PlayerIP)
 	if err != nil {
 		log.Fatal(err)
@@ -77,6 +80,10 @@ func main() {
 			log.Fatal("Couldn't reset deck")
 		}
 
+		// set number of books and cards in hand to zero
+		numBooks = append(numBooks, 0)
+		handSizes = append(handSizes, 0)
+
 		// assemble list of other players
 		playerConfig := new(gfcommon.GFPlayerConfig)
 		playerConfig.Host = HostIP
@@ -102,7 +109,7 @@ func main() {
 	}
 	log.Println("Dealing cards...")
 	for i := 0; i < numCardsToDeal; i++ {
-		for _, player := range players {
+		for playerIdx, player := range players {
 
 			// take the top card off the deck and try to deal it to a player
 			c := deck.TakeTopCard()
@@ -114,6 +121,8 @@ func main() {
 				deck.AddCard(c)
 				log.Printf("Card returned to deck, which now has %d cards: %s\n", deck.NumCards(), deck.String())
 
+			} else {
+				handSizes[playerIdx] += 1
 			}
 		}
 	}
@@ -125,7 +134,6 @@ func main() {
 	//doneflag := false
 	doneflag := false
 	playerIdx := 0
-	rounds := 0
 	for !doneflag {
 		log.Printf("Activiating player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
 
@@ -135,15 +143,17 @@ func main() {
 			log.Fatalf("Could not exectue TakeTurn RPC for player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
 		}
 		log.Printf("Turn complete for player %d (%s): has %d books and %d cards in hand\n", playerIdx, ConnectedPlayerIP[playerIdx].Address, ret.NumBooks, ret.NumCardsInHand)
+		numBooks[playerIdx] = ret.NumBooks
+		handSizes[playerIdx] = ret.NumCardsInHand
 
-		playerIdx++
-		if playerIdx == len(players) {
-			playerIdx = 0
-			rounds++
+		if (deck.NumCards() == 0) && (slices.Max(handSizes) == 0) {
+			doneflag = true
 		}
 
-		if rounds == 4 {
-			doneflag = true
+		// move on to next player
+		playerIdx += 1
+		if playerIdx >= len(players) {
+			playerIdx = 0
 		}
 	}
 }
