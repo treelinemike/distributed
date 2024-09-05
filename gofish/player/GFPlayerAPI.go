@@ -211,6 +211,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		if len(newCards) > 0 {
 			hand.Cards = append(hand.Cards, newCards...)
 			removeBooksFromHand()
+			log.Printf("Current hand (%s)\n", hand.String())
 		} else {
 			// try to pull a card from the deck
 			c = new(playingcards.Card) // need to reset card b/c a zero value in struct from RPC won't get gobbed, so old value will persist!
@@ -233,6 +234,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 				hand.AddCard((*c))
 				removeBooksFromHand()
 			}
+			log.Printf("Current hand (%s)\n", hand.String())
 		}
 
 	} // end for tryAgain
