@@ -134,7 +134,6 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 				log.Println("Deck is empty, cannot do anything this turn!")
 				resp.NumBooks = numBooks
 				resp.NumCardsInHand = hand.NumCards()
-				log.Println(resp)
 				return nil
 			} else {
 				hand.AddCard((*c))
@@ -187,7 +186,6 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 					log.Println("Deck is empty, cannot continue this turn!")
 					resp.NumBooks = numBooks
 					resp.NumCardsInHand = hand.NumCards()
-					log.Println(resp)
 					return nil
 				} else {
 					log.Printf("Pulled a card from the deck: %s\n", c.String())
@@ -207,6 +205,5 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 	// return
 	resp.NumBooks = numBooks
 	resp.NumCardsInHand = hand.NumCards()
-	log.Println(resp)
 	return nil
 }

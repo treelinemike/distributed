@@ -137,14 +137,17 @@ func main() {
 	for !doneflag {
 		log.Printf("Activiating player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
 
+		// interestingly struct fields with zero value aren't included in gob encoding
+		// so we need to reset return struct fields to zero before calling an RPC
+		// this was a terrible debug, but is actually confirmed here: https://github.com/golang/go/issues/8997
+		ret.NumBooks = 0
+		ret.NumCardsInHand = 0
 		err = players[playerIdx].Call("GFPlayerAPI.TakeTurn", j, &ret)
 		if err != nil {
 			log.Print(err)
 			log.Fatalf("Could not exectue TakeTurn RPC for player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
 		}
 		log.Printf("Turn complete for player %d (%s): has %d books and %d cards in hand\n", playerIdx, ConnectedPlayerIP[playerIdx].Address, ret.NumBooks, ret.NumCardsInHand)
-		log.Printf("len(numBooks) = %d, len(handSizes) = %d\n", len(numBooks), len(handSizes))
-		log.Print(ret)
 		numBooks[playerIdx] = ret.NumBooks
 		handSizes[playerIdx] = ret.NumCardsInHand
 
