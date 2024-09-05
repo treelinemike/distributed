@@ -84,6 +84,13 @@ func (gfapi *GFPlayerAPI) TakeTopCard(_ int, c *playingcards.Card) error {
 	return nil
 }
 
+// RPC to print current deck to log
+// used, e.g. after dealing is complete
+func (gfapi *GFPlayerAPI) PrintHand(_ int, resp *int) error {
+	log.Printf("Current hand (%s)\n", hand.String())
+	return nil
+}
+
 // RPC to give cards to another player
 func (gfapi *GFPlayerAPI) GiveCards(requestedVal int, transferredCards *[]playingcards.Card) error {
 	newHand := make([]playingcards.Card, 0)
@@ -97,6 +104,8 @@ func (gfapi *GFPlayerAPI) GiveCards(requestedVal int, transferredCards *[]playin
 	}
 	if len(*transferredCards) > 0 {
 		log.Printf("Relinquished %d cards of rank %s\n", len(*transferredCards), playingcards.NumToCardChar(requestedVal))
+	} else {
+		log.Printf("Rejected request for cards of rank %s\n", playingcards.NumToCardChar(requestedVal))
 	}
 	return nil
 }
@@ -175,6 +184,8 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		// select a random player to request cards from
 		// TODO: we could be smarter about this choice as well!
 		// TODO: decide whether to fail if only one player (zero others), not failing can be helpful for debugging - play with deck only
+
+		newCards := make([]playingcards.Card, 0)
 		if len(config.OtherPlayers) > 0 {
 			playerToRequestFrom := rand.Intn(len(config.OtherPlayers))
 			log.Printf("Fishing for a card of rank %s\n", playingcards.NumToCardChar(valToRequest))
@@ -187,42 +198,43 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 			}
 
 			// try to get cards from opponent
-			newCards := make([]playingcards.Card, 0)
 			err = opponent.Call("GFPlayerAPI.GiveCards", valToRequest, &newCards)
 			if err != nil {
 				log.Fatalf("Couldn't request cards from player: %s\n", config.OtherPlayers[playerToRequestFrom].Address)
 			}
 			opponent.Close()
 			log.Printf("Received %d cards from %s\n", len(newCards), config.OtherPlayers[playerToRequestFrom].Address)
+		}
 
-			// add cards to deck if we received any
-			if len(newCards) > 0 {
-				hand.Cards = append(hand.Cards, newCards...)
-				removeBooksFromHand()
+		// add cards to deck if we received any
+		// otherwise try to draw from deck
+		if len(newCards) > 0 {
+			hand.Cards = append(hand.Cards, newCards...)
+			removeBooksFromHand()
+		} else {
+			// try to pull a card from the deck
+			c = new(playingcards.Card) // need to reset card b/c a zero value in struct from RPC won't get gobbed, so old value will persist!
+			err = host.Call("GFHostAPI.TakeTopCard", j, c)
+			if err != nil {
+				log.Fatal("Error retrieving top card from deck")
+			}
+			if c.Val == 0 {
+				log.Println("Could not pull from deck (deck is empty), cannot continue this turn!")
+				resp.NumBooks = numBooks
+				resp.NumCardsInHand = hand.NumCards()
+				return nil
 			} else {
-				// try to pull a card from the deck
-				c = new(playingcards.Card) // need to reset card b/c a zero value in struct from RPC won't get gobbed, so old value will persist!
-				err = host.Call("GFHostAPI.TakeTopCard", j, c)
-				if err != nil {
-					log.Fatal("Error retrieving top card from deck")
-				}
-				if c.Val == 0 {
-					log.Println("Could not pull from deck (deck is empty), cannot continue this turn!")
-					resp.NumBooks = numBooks
-					resp.NumCardsInHand = hand.NumCards()
-					return nil
+				log.Printf("Pulled a card from the deck: %s\n", c.String())
+				if c.Val == valToRequest {
+					log.Println("You fished your wish!")
 				} else {
-					log.Printf("Pulled a card from the deck: %s\n", c.String())
-					if c.Val == valToRequest {
-						log.Println("You fished your wish!")
-					} else {
-						tryAgain = false
-					}
-					hand.AddCard((*c))
-					removeBooksFromHand()
+					tryAgain = false
 				}
+				hand.AddCard((*c))
+				removeBooksFromHand()
 			}
 		}
+
 	} // end for tryAgain
 
 	// return

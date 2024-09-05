@@ -130,6 +130,14 @@ func main() {
 		}
 	}
 
+	// ask each player to print the hand it was dealt (to log)
+	for playerIdx, player := range players {
+		err = player.Call("GFPlayerAPI.PrintHand", j, &j)
+		if err != nil {
+			log.Printf("Could not get %s to print its hand\n", ConnectedPlayerIP[playerIdx].Address)
+		}
+	}
+
 	// show remaining deck
 	log.Printf("All hands dealt. Remaining deck has %d cards: %s\n", deck.NumCards(), deck.String())
 
