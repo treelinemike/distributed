@@ -37,7 +37,7 @@ func removeBooksFromHand() error {
 			}
 			hand.Cards = newHand
 			numBooks += 1
-			log.Printf("Removed a book of value %s\n", playingcards.NumToCardChar(k))
+			log.Printf("Removed a book of rank %s\n", playingcards.NumToCardChar(k))
 		}
 	}
 
@@ -96,7 +96,7 @@ func (gfapi *GFPlayerAPI) GiveCards(requestedVal int, transferredCards *[]playin
 		hand.Cards = newHand
 	}
 	if len(*transferredCards) > 0 {
-		log.Printf("Gave up %d cards of rank %s\n", len(*transferredCards), playingcards.NumToCardChar(requestedVal))
+		log.Printf("Relinquished %d cards of rank %s\n", len(*transferredCards), playingcards.NumToCardChar(requestedVal))
 	}
 	return nil
 }
