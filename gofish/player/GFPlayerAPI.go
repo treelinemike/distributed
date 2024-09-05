@@ -197,7 +197,6 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 					log.Printf("Added card, hand is now: %s\n", hand.String())
 					removeBooksFromHand()
 				}
-				tryAgain = false
 			}
 		}
 	} // end for tryAgain
