@@ -161,4 +161,24 @@ func main() {
 			playerIdx = 0
 		}
 	}
+
+	// figure out who won
+	var winStatus int
+	winningNumBooks := slices.Max(numBooks)
+	numWinners := 0
+	for _, nb := range numBooks {
+		if nb == winningNumBooks {
+			numWinners++
+		}
+	}
+	for playerIdx, player := range players {
+		winStatus = 0
+		if numBooks[playerIdx] == winningNumBooks {
+			winStatus = numWinners
+		}
+		err = player.Call("GFPlayerAPI.EndGame", winStatus, &j)
+		if err != nil {
+			log.Fatalf("Could not exectue EndGame RPC for player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
+		}
+	}
 }

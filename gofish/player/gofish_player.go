@@ -24,6 +24,7 @@ func main() {
 	fmt.Println("Ready to play")
 
 	// TODO: Find a better way to do this!
-	for {
+	gameover = false
+	for !gameover {
 	}
 }

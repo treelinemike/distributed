@@ -16,6 +16,7 @@ var hand = new(playingcards.Deck) // it may seem strange that 1) we don't use th
 var config = new(gfcommon.GFPlayerConfig)
 var host *rpc.Client
 var numBooks int
+var gameover bool
 
 func removeBooksFromHand() error {
 
@@ -36,7 +37,7 @@ func removeBooksFromHand() error {
 			}
 			hand.Cards = newHand
 			numBooks += 1
-			log.Printf("Removed a book of value %d\n", k)
+			log.Printf("Removed a book of value %s\n", playingcards.NumToCardChar(k))
 		}
 	}
 
@@ -94,7 +95,25 @@ func (gfapi *GFPlayerAPI) GiveCards(requestedVal int, transferredCards *[]playin
 		}
 		hand.Cards = newHand
 	}
-	log.Printf("Gave up %d cards to another player!\n", len(*transferredCards))
+	if len(*transferredCards) > 0 {
+		log.Printf("Gave up %d cards of rank %s\n", len(*transferredCards), playingcards.NumToCardChar(requestedVal))
+	}
+	return nil
+}
+
+// RPC to end game
+// if this player lost the game winStatus will be zero
+// otherwise, winStatus will reflect the total number of winners
+func (gfapi *GFPlayerAPI) EndGame(winStatus int, resp *int) error {
+	gameover = true
+	switch winStatus {
+	case 0:
+		log.Printf("Lost game with %d books collected", numBooks)
+	case 1:
+		log.Printf("Won game wtih %d books collected", numBooks)
+	default:
+		log.Printf("Tied with %d other players for the win with %d books collected", winStatus-1, numBooks)
+	}
 	return nil
 }
 
@@ -107,7 +126,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 	tryAgain := true // set up to continue unless we (later) set otherwise
 
 	// handle blink(1) indicator and logging for turn start/end
-	log.Printf("Starting turn with %d books and hand: %s\n", numBooks, hand.String())
+	log.Printf("Starting turn with %d books and hand (%s)\n", numBooks, hand.String())
 	_, err := exec.Command("blink1-on.sh").Output()
 	if err != nil {
 		log.Println("Could not turn on blink(1) indicator")
@@ -117,7 +136,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		if err != nil {
 			log.Println("Could not turn off blink(1) indicator")
 		}
-		log.Printf("Ending turn with %d books and hand: %s\n", numBooks, hand.String())
+		log.Printf("Ending turn with %d books and hand (%s)\n", numBooks, hand.String())
 	}()
 
 	// query players for cards until our luck runs out
@@ -154,7 +173,8 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		// TODO: decide whether to fail if only one player (zero others), not failing can be helpful for debugging - play with deck only
 		if len(config.OtherPlayers) > 0 {
 			playerToRequestFrom := rand.Intn(len(config.OtherPlayers))
-			log.Printf("Requesting card value %d from player index %d\n", valToRequest, playerToRequestFrom)
+			log.Printf("Fishing for a card ofrank %s\n", playingcards.NumToCardChar(valToRequest))
+			log.Printf("Asking player %s\n", config.OtherPlayers[playerToRequestFrom].Address)
 
 			// connect to specified player
 			opponent, err := rpc.DialHTTP("tcp", config.OtherPlayers[playerToRequestFrom].Address+":"+config.OtherPlayers[playerToRequestFrom].Port)

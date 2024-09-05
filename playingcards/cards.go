@@ -1,6 +1,7 @@
 package playingcards
 
 import (
+	"log"
 	"strconv"
 )
 
@@ -29,8 +30,29 @@ type MyArgType struct {
 	ThisSuit Suit
 }
 
+func NumToCardChar(val int) string {
+	if val > 1 && val < 11 {
+		return strconv.Itoa(val)
+	} else {
+		switch val {
+		case 1:
+			return "A"
+		case 11:
+			return "J"
+		case 12:
+			return "Q"
+		case 13:
+			return "K"
+		default:
+			log.Panic("Invalid numerical card rank!")
+			return ""
+		}
+	}
+}
+
 func (c Card) String() string {
 	var str string
+	str += NumToCardChar(c.Val)
 
 	if c.Val > 1 && c.Val < 11 {
 		str += strconv.Itoa(c.Val)
