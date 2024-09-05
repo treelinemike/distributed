@@ -36,6 +36,7 @@ func removeBooksFromHand() error {
 			}
 			hand.Cards = newHand
 			numBooks += 1
+			log.Printf("Removed a book of value %d\n", k)
 		}
 	}
 
@@ -81,6 +82,22 @@ func (gfapi *GFPlayerAPI) TakeTopCard(_ int, c *playingcards.Card) error {
 	return nil
 }
 
+// RPC to give cards to another player
+func (gfapi *GFPlayerAPI) GiveCards(requestedVal int, transferredCards *[]playingcards.Card) error {
+	newHand := make([]playingcards.Card, 0)
+	for _, c := range hand.Cards {
+		if c.Val == requestedVal {
+			*transferredCards = append(*transferredCards, c)
+		} else {
+			newHand = append(newHand, c)
+		}
+		hand.Cards = newHand
+	}
+	return nil
+}
+
+// RPC to allow a player to take a turn
+// this is the main logic of the game
 func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 
 	var j int
@@ -138,14 +155,52 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 			playerToRequestFrom := rand.Intn(len(config.OtherPlayers))
 			log.Printf("Requesting card value %d from player index %d\n", valToRequest, playerToRequestFrom)
 
-			// connect to other player
-			// TODO: REQUEST CARDS RPC CALL
+			// connect to specified player
+			opponent, err := rpc.DialHTTP("tcp", config.OtherPlayers[playerToRequestFrom].Address+":"+config.OtherPlayers[playerToRequestFrom].Port)
+			if err != nil {
+				log.Println("Error connecting to client: " + config.OtherPlayers[playerToRequestFrom].Address)
+			}
+			log.Println("Connected to client")
 
+			// try to get cards from opponent
+			newCards := make([]playingcards.Card, 0)
+			err = opponent.Call("GFPlayerAPI.GiveCards", valToRequest, &newCards)
+			if err != nil {
+				log.Fatalf("Couldn't request cards from player: %s\n", config.OtherPlayers[playerToRequestFrom].Address)
+			}
+			log.Printf("Received %d cards from %s\n", len(newCards), config.OtherPlayers[playerToRequestFrom].Address)
+
+			// add cards to deck if we received any
+			if len(newCards) > 0 {
+				hand.Cards = append(hand.Cards, newCards...)
+				removeBooksFromHand()
+			} else {
+				// try to pull a card from the deck
+				log.Println("Attempting to pull card from deck")
+				err = host.Call("GFHostAPI.TakeTopCard", j, c)
+				if err != nil {
+					log.Fatal("Error retrieving top card from deck")
+				}
+				if c.Val == 0 {
+					log.Println("Deck is empty, cannot continue this turn!")
+					resp.NumBooks = numBooks
+					resp.NumCardsInHand = hand.NumCards()
+					return nil
+				} else {
+					log.Printf("Pulled a card from the deck: %s\n", c.String())
+					if c.Val == valToRequest {
+						log.Println("You fished your wish!")
+					} else {
+						tryAgain = false
+					}
+					hand.AddCard((*c))
+					log.Printf("Added card, hand is now: %s\n", hand.String())
+					removeBooksFromHand()
+				}
+				tryAgain = false
+			}
 		}
-
-		//removeBooksFromHand()
-		tryAgain = false
-	}
+	} // end for tryAgain
 
 	// return
 	resp.NumBooks = numBooks
