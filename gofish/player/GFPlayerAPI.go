@@ -105,6 +105,7 @@ func (gfapi *GFPlayerAPI) GiveCards(requestedVal int, transferredCards *[]playin
 // if this player lost the game winStatus will be zero
 // otherwise, winStatus will reflect the total number of winners
 func (gfapi *GFPlayerAPI) EndGame(winStatus int, resp *int) error {
+	defer func() { gameover = true }()
 	switch winStatus {
 	case 0:
 		log.Printf("Lost game with %d books collected", numBooks)
@@ -113,7 +114,6 @@ func (gfapi *GFPlayerAPI) EndGame(winStatus int, resp *int) error {
 	default:
 		log.Printf("Tied with %d other players for the win with %d books collected", winStatus-1, numBooks)
 	}
-	gameover = true
 	return nil
 }
 
