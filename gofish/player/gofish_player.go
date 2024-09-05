@@ -26,7 +26,7 @@ func main() {
 	// TODO: Find a better way to do this!
 	gameover = false
 	for !gameover {
-		if gameover == true {
+		if gameover {
 			log.Println("We should be done!")
 		}
 	}
