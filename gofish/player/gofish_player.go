@@ -28,6 +28,6 @@ func main() {
 	gameover = false
 	for !gameover {
 	}
-
+	log.Println("We should be ending now!")
 	time.Sleep(10 * time.Millisecond)
 }
