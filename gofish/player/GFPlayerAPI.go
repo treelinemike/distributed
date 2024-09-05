@@ -173,7 +173,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		// TODO: decide whether to fail if only one player (zero others), not failing can be helpful for debugging - play with deck only
 		if len(config.OtherPlayers) > 0 {
 			playerToRequestFrom := rand.Intn(len(config.OtherPlayers))
-			log.Printf("Fishing for a card ofrank %s\n", playingcards.NumToCardChar(valToRequest))
+			log.Printf("Fishing for a card of rank %s\n", playingcards.NumToCardChar(valToRequest))
 			log.Printf("Asking player %s\n", config.OtherPlayers[playerToRequestFrom].Address)
 
 			// connect to specified player
@@ -198,6 +198,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 			} else {
 				// try to pull a card from the deck
 				log.Println("Attempting to pull card from deck")
+				c = new(playingcards.Card) // need to reset card b/c a zero value in struct from RPC won't get gobbed, so old value will persist!
 				err = host.Call("GFHostAPI.TakeTopCard", j, c)
 				if err != nil {
 					log.Fatal("Error retrieving top card from deck")
