@@ -10,6 +10,9 @@ import (
 
 func main() {
 
+	// format log
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+
 	// create and register player API
 	log.Println("Registering player API")
 	thisapi := new(GFPlayerAPI)

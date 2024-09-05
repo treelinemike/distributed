@@ -16,6 +16,9 @@ func main() {
 	var ret gfcommon.GFPlayerReturn
 	var err error
 
+	// format log
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+
 	// load host and player IP addresses and ports from YAML config file
 	var HostIP gfcommon.NetworkAddress
 	var PlayerIP = make([]gfcommon.NetworkAddress, 0)
