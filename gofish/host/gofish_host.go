@@ -183,9 +183,10 @@ func main() {
 			numWinners++
 		}
 	}
+	sep := ""
 	for playerIdx, player := range players {
 		winStatus = 0
-		sep := ""
+
 		if numBooks[playerIdx] == winningNumBooks {
 			winStatus = numWinners
 			winString += sep + ConnectedPlayerIP[playerIdx].Address
