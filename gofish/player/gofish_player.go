@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/rpc"
+	"time"
 )
 
 func main() {
@@ -26,8 +27,7 @@ func main() {
 	// TODO: Find a better way to do this!
 	gameover = false
 	for !gameover {
-		if gameover {
-			log.Println("We should be done!")
-		}
 	}
+
+	time.Sleep(10 * time.Millisecond)
 }
