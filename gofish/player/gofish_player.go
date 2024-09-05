@@ -27,7 +27,7 @@ func main() {
 	// TODO: Find a better way to do this!
 	gameover = false
 	for !gameover {
+		time.Sleep(1 * time.Millisecond)
 	}
 	log.Println("We should be ending now!")
-	time.Sleep(10 * time.Millisecond)
 }
