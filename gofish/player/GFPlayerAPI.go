@@ -114,6 +114,10 @@ func (gfapi *GFPlayerAPI) EndGame(winStatus int, resp *int) error {
 	default:
 		log.Printf("Tied with %d other players for the win with %d books collected", winStatus-1, numBooks)
 	}
+
+	// close connection to host
+	host.Close()
+
 	return nil
 }
 
@@ -181,7 +185,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 			if err != nil {
 				log.Println("Error connecting to client: " + config.OtherPlayers[playerToRequestFrom].Address)
 			}
-			log.Println("Connected to client")
+			log.Println("Connected to remote player")
 
 			// try to get cards from opponent
 			newCards := make([]playingcards.Card, 0)
@@ -189,6 +193,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 			if err != nil {
 				log.Fatalf("Couldn't request cards from player: %s\n", config.OtherPlayers[playerToRequestFrom].Address)
 			}
+			opponent.Close()
 			log.Printf("Received %d cards from %s\n", len(newCards), config.OtherPlayers[playerToRequestFrom].Address)
 
 			// add cards to deck if we received any
