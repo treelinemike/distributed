@@ -29,6 +29,6 @@ func main() {
 	// TODO: Find a better way to do this!
 	gameover = false
 	for !gameover {
-		time.Sleep(100 * time.Microsecond) // TODO: pause needed to make sure we evaluate the gameover condition
+		time.Sleep(10 * time.Millisecond) // TODO: pause needed to make sure we evaluate the gameover condition
 	}
 }
