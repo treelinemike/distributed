@@ -93,6 +93,7 @@ func (gfapi *GFPlayerAPI) GiveCards(requestedVal int, transferredCards *[]playin
 		}
 		hand.Cards = newHand
 	}
+	log.Printf("Gave up %d cards to another player!\n", len(*transferredCards))
 	return nil
 }
 
@@ -139,7 +140,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 			}
 		}
 
-		// remove books (really only applicable on first turn in rare case that we're dealt a book)
+		// remove books
 		removeBooksFromHand()
 
 		// select a card at random from our hand
