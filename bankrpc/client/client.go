@@ -10,7 +10,7 @@ func main() {
 
 	// connect to host
 	var err error
-	remoteAccount, err := rpc.DialHTTP("tcp", "localhost:1234")
+	remoteAccount, err := rpc.DialHTTP("tcp", "127.0.0.1:1234")
 	if err != nil {
 		log.Fatal("Error connecting to banker")
 	}
