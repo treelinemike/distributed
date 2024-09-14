@@ -1,16 +1,16 @@
 Host:
-  Address: 192.168.10.100
+  Address: 127.0.0.1
   Port: 4040
 Players:
   Player0:
     Address: 127.0.0.1 # don't use localhost or 127.0.0.1 as this won't map correctly on remote players!, it is a pain in WSL though...
     Port: 1234
   Player1:
-    Address: 192.168.10.10
-    Port: 1234
+    Address: 127.0.0.1
+    Port: 1235
   Player2:
-    Address: 192.168.10.11
-    Port: 1234
+    Address: 127.0.0.1
+    Port: 1236
 #  Player3:
 #    Address: 192.168.10.12
 #    Port: 1234
