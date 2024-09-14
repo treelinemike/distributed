@@ -20,7 +20,7 @@ func main() {
 	var port string
 	switch len(os.Args) {
 	case 1:
-		port = ":1234"
+		port = ":1234" // default port
 	case 2:
 		_, err := strconv.ParseInt(os.Args[1], 10, 16)
 		if err != nil {

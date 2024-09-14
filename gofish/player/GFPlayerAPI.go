@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"net/rpc"
 	"os/exec"
-	"time"
 )
 
 type GFPlayerAPI int
@@ -55,7 +54,7 @@ func (gfapi *GFPlayerAPI) SetConfig(c gfcommon.GFPlayerConfig, resp *int) error 
 	var err error
 	host, err = rpc.DialHTTP("tcp", config.Host.Address+":"+config.Host.Port)
 	if err != nil {
-		log.Println("Error connecting to host: " + config.Host.Address)
+		log.Printf("Error connecting to host %s:%s\n"+config.Host.Address, config.Host.Port)
 	}
 	log.Println("Connected to host")
 	return nil
@@ -146,7 +145,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		log.Println("Could not turn on blink(1) indicator")
 	}
 	defer func() {
-		time.Sleep(2 * time.Second)
+		//time.Sleep(2 * time.Second) // delay so we can watch gameplay
 		_, err = exec.Command("blink1-off.sh").Output()
 		if err != nil {
 			log.Println("Could not turn off blink(1) indicator")
@@ -191,21 +190,21 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		if len(config.OtherPlayers) > 0 {
 			playerToRequestFrom := rand.Intn(len(config.OtherPlayers))
 			log.Printf("Fishing for a card of rank %s\n", playingcards.NumToCardChar(valToRequest))
-			log.Printf("Asking player %s\n", config.OtherPlayers[playerToRequestFrom].Address)
+			log.Printf("Asking player %s:%s\n", config.OtherPlayers[playerToRequestFrom].Address, config.OtherPlayers[playerToRequestFrom].Port)
 
 			// connect to specified player
 			opponent, err := rpc.DialHTTP("tcp", config.OtherPlayers[playerToRequestFrom].Address+":"+config.OtherPlayers[playerToRequestFrom].Port)
 			if err != nil {
-				log.Println("Error connecting to client: " + config.OtherPlayers[playerToRequestFrom].Address)
+				log.Printf("Error connecting to client %s:%s\n", config.OtherPlayers[playerToRequestFrom].Address, config.OtherPlayers[playerToRequestFrom].Port)
 			}
 
 			// try to get cards from opponent
 			err = opponent.Call("GFPlayerAPI.GiveCards", valToRequest, &newCards)
 			if err != nil {
-				log.Fatalf("Couldn't request cards from player: %s\n", config.OtherPlayers[playerToRequestFrom].Address)
+				log.Fatalf("Couldn't request cards from player: %s:%s\n", config.OtherPlayers[playerToRequestFrom].Address, config.OtherPlayers[playerToRequestFrom].Port)
 			}
 			opponent.Close()
-			log.Printf("Received %d cards from %s\n", len(newCards), config.OtherPlayers[playerToRequestFrom].Address)
+			log.Printf("Received %d cards from %s:%s\n", len(newCards), config.OtherPlayers[playerToRequestFrom].Address, config.OtherPlayers[playerToRequestFrom].Port)
 		}
 
 		// add cards to deck if we received any

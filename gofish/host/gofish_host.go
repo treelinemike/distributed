@@ -2,6 +2,7 @@ package main
 
 import (
 	"engg415/gofish/gfcommon"
+	"os"
 
 	"log"
 	"net"
@@ -19,13 +20,24 @@ func main() {
 	// format log
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
+	// get name of config file from command line argument
+	var configFilename string
+	switch len(os.Args) {
+	case 1:
+		configFilename = "config.yaml" // default confg file name
+	case 2:
+		configFilename = os.Args[1]
+	default:
+		log.Fatal("Too many arguments provided")
+	}
+
 	// load host and player IP addresses and ports from YAML config file
 	var HostIP gfcommon.NetworkAddress
 	var PlayerIP = make([]gfcommon.NetworkAddress, 0)
 	var ConnectedPlayerIP = make([]gfcommon.NetworkAddress, 0)
 	handSizes := make([]int, 0)
 	numBooks := make([]int, 0)
-	err = gfcommon.LoadGFGameConfig("gofish_config.yaml", &HostIP, &PlayerIP)
+	err = gfcommon.LoadGFGameConfig(configFilename, &HostIP, &PlayerIP)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +69,7 @@ func main() {
 		// connect to player
 		client, err := rpc.DialHTTP("tcp", playerip.Address+":"+playerip.Port)
 		if err != nil {
-			log.Println("Error connecting to remote server: " + playerip.Address)
+			log.Printf("Error connecting to remote server %s:%s\n", playerip.Address, playerip.Port)
 			continue
 		}
 
@@ -75,7 +87,7 @@ func main() {
 	// configure each player
 	for i, player := range players {
 
-		log.Printf("Setting config for player: %s\n", ConnectedPlayerIP[i].Address)
+		log.Printf("Setting config for player %s:%s\n", ConnectedPlayerIP[i].Address, ConnectedPlayerIP[i].Port)
 
 		// reset player hand
 		err = player.Call("GFPlayerAPI.ResetHand", j, &j)
@@ -134,7 +146,7 @@ func main() {
 	for playerIdx, player := range players {
 		err = player.Call("GFPlayerAPI.PrintHand", j, &j)
 		if err != nil {
-			log.Printf("Could not get %s to print its hand\n", ConnectedPlayerIP[playerIdx].Address)
+			log.Printf("Could not get %s:%s to print its hand\n", ConnectedPlayerIP[playerIdx].Address, ConnectedPlayerIP[playerIdx].Port)
 		}
 	}
 
@@ -146,7 +158,7 @@ func main() {
 	doneflag := false
 	playerIdx := 0
 	for !doneflag {
-		log.Printf("Activiating player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
+		log.Printf("Activiating player %d (%s:%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address, ConnectedPlayerIP[playerIdx].Port)
 
 		// interestingly struct fields with zero value aren't included in gob encoding
 		// so we need to reset return struct fields to zero before calling an RPC
@@ -156,9 +168,9 @@ func main() {
 		err = players[playerIdx].Call("GFPlayerAPI.TakeTurn", j, &ret)
 		if err != nil {
 			log.Print(err)
-			log.Fatalf("Could not exectue TakeTurn RPC for player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
+			log.Fatalf("Could not exectue TakeTurn RPC for player %d (%s:%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address, ConnectedPlayerIP[playerIdx].Port)
 		}
-		log.Printf("Turn complete for player %d (%s): has %d books and %d cards in hand\n", playerIdx, ConnectedPlayerIP[playerIdx].Address, ret.NumBooks, ret.NumCardsInHand)
+		log.Printf("Turn complete for player %d (%s:%s): has %d books and %d cards in hand\n", playerIdx, ConnectedPlayerIP[playerIdx].Address, ConnectedPlayerIP[playerIdx].Port, ret.NumBooks, ret.NumCardsInHand)
 		numBooks[playerIdx] = ret.NumBooks
 		handSizes[playerIdx] = ret.NumCardsInHand
 
@@ -194,7 +206,7 @@ func main() {
 		}
 		err = player.Call("GFPlayerAPI.EndGame", winStatus, &j)
 		if err != nil {
-			log.Fatalf("Could not exectue EndGame RPC for player %d (%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address)
+			log.Fatalf("Could not exectue EndGame RPC for player %d (%s:%s)\n", playerIdx, ConnectedPlayerIP[playerIdx].Address, ConnectedPlayerIP[playerIdx].Port)
 		}
 	}
 	log.Println(winString)
