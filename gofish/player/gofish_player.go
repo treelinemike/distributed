@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"net/rpc"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -13,12 +15,29 @@ func main() {
 	// format log
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
+	// if there is one command line argument, assume it is a port
+	// and try to connect on it
+	var port string
+	switch len(os.Args) {
+	case 1:
+		port = ":1234"
+	case 2:
+		_, err := strconv.ParseInt(os.Args[1], 10, 16)
+		if err != nil {
+			log.Fatal("Invalid port")
+		} else {
+			port = ":" + os.Args[1]
+		}
+	default:
+		log.Fatal("Too many arguments provided")
+	}
+
 	// create and register player API
-	log.Println("Registering player API")
+	log.Println("Registering player API for access on port", port[1:])
 	thisapi := new(GFPlayerAPI)
 	rpc.Register(thisapi)
 	rpc.HandleHTTP()
-	l, err := net.Listen("tcp", ":1234")
+	l, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatal("Error listening - is the server already running?")
 		return
