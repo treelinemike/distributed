@@ -120,7 +120,7 @@ func (gfapi *GFPlayerAPI) EndGame(winStatus int, resp *int) error {
 	case 0:
 		log.Printf("Lost game with %d books collected", numBooks)
 	case 1:
-		log.Printf("Won game wtih %d books collected", numBooks)
+		log.Printf("Won game with %d books collected", numBooks)
 	default:
 		log.Printf("Tied with %d other player(s) for the win with %d books collected", winStatus-1, numBooks)
 	}
