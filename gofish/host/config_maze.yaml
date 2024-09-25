@@ -1,0 +1,16 @@
+Host: 
+  Address: 192.168.88.115
+  Port: 4040
+Players:
+  Player1:
+    Address: 192.168.88.112
+    Port: 1234
+  Player2:
+    Address: 192.168.88.113
+    Port: 1234
+  Player3:
+    Address: 192.168.88.114
+    Port: 1234 
+  Player4:
+    Address: 192.168.88.116
+    Port: 1234
