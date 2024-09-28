@@ -1,0 +1,13 @@
+Servers:
+  1: 
+    Address: 192.168.88.101
+    Port: 1234
+  2: 
+    Address: 192.168.88.102
+    Port: 1234
+  3: 
+    Address: 192.168.88.103
+    Port: 1234
+  4: 
+    Address: 192.168.88.104
+    Port: 1234

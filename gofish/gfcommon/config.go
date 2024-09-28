@@ -18,12 +18,11 @@ type (
 		Host         NetworkAddress
 		OtherPlayers []NetworkAddress
 	}
+	GFConfig struct {
+		Host    NetworkAddress            `mapstructure:"Host"`
+		Players map[string]NetworkAddress `mapstructure:"Players"`
+	}
 )
-
-type GFConfig struct {
-	Host    NetworkAddress            `mapstructure:"Host"`
-	Players map[string]NetworkAddress `mapstructure:"Players"`
-}
 
 // see: https://betterprogramming.pub/parsing-and-creating-yaml-in-go-crash-course-2ec10b7db850
 func LoadGFGameConfig(configFileName string, HostIP *NetworkAddress, PlayerIP *[]NetworkAddress) error {
