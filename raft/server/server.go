@@ -14,6 +14,13 @@ import (
 
 type RaftAPI int
 
+var electiontimer *time.Timer
+
+// non-volitile storage --- how are we going to implement this?
+var currentTerm int = 0 // can't do short declaration := at package level
+var votedFor string = ""
+var raftlog []string = make([]string, 0)
+
 // TODO: struct members don't need to be exported if we're keeping in the server.go main package
 type AEParams struct {
 	term         int
@@ -62,17 +69,18 @@ func main() {
 	log.Println("Loading Raft config file")
 	var t common.Timeout
 	common.LoadRaftConfig(filename, servers, &t)
-	fmt.Printf("Timeout range: [%d, %d]\n", t.Min_ms, t.Max_ms)
-	fmt.Printf("Random draw: %d\n", rand.IntN(t.Max_ms-t.Min_ms)+t.Min_ms) // test picking a random timeout value
+	log.Printf("Config specifies election timeout range [%d, %d]\n", t.Min_ms, t.Max_ms)
 
 	// make sure provided selfkey is in map from config file
 	_, ok := servers[selfkey]
 	if !ok {
 		log.Fatal("Key ", selfkey, " is not in cluster config file")
+	} else {
+		log.Printf("Config specifies this server as %s:%s", servers[selfkey].Address, servers[selfkey].Port)
 	}
 
 	// serve RaftAPI
-	log.Println("Registering server API for access on port", servers[selfkey].Port)
+	log.Println("Registering RPCs for access on port", servers[selfkey].Port)
 	thisapi := new(RaftAPI)
 	rpc.Register(thisapi)
 	rpc.HandleHTTP()
@@ -82,16 +90,17 @@ func main() {
 		return
 	}
 	go http.Serve(l, nil)
-	log.Println("Ready to play")
 
 	// start a timer
+	electiontimer = time.NewTimer(100 * time.Second)
 	i := 0
-	timer1 := time.NewTimer(2 * time.Second)
 	for {
-		<-timer1.C
-		fmt.Printf("%d: calling election!\n", i)
+		randtval := time.Duration(rand.IntN(t.Max_ms-t.Min_ms)+t.Min_ms) * time.Millisecond
+		log.Printf("Setting election timeout at %v", randtval)
+		electiontimer.Reset(randtval)
+		<-electiontimer.C
+		log.Printf("%d: calling election!\n", i)
 		i++
-		timer1.Reset(2 * time.Second)
 	}
 
 }
