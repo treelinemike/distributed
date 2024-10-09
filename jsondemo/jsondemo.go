@@ -28,25 +28,25 @@ func main() {
 			log.Fatal("Error: ", jsonfilename, " is a directory!")
 		}
 
-		// load json file into nv struct
-		log.Println("File ", jsonfilename, " exists, loading it...")
+		// load json file into nvstate
+		log.Println("File ", jsonfilename, " exists, loading nvstate from it...")
 		infile, _ := os.OpenFile(jsonfilename, os.O_RDONLY, os.ModePerm)
 		decoder := json.NewDecoder(infile)
 		decoder.Decode(&st)
 		infile.Close()
 
 	} else {
-		log.Println("File ", jsonfilename, " does not exist, so initialize nv struct...")
+		log.Println("File ", jsonfilename, " does not exist, so set nvstate to default initial state...")
 		st.Term = 12
 		st.LeaderID = "Server1"
 		st.Log = append(st.Log, "first command", "second command")
 	}
 
 	// show nv struct
-	fmt.Println("NV struct contents: ", st)
+	fmt.Println("nvstate struct contents: ", st)
 
 	// now create an object and write to a json file
-	log.Println("Writing nv struct to file...")
+	log.Println("Writing nvstate to file...")
 	outfile, _ := os.OpenFile(jsonfilename, os.O_CREATE, os.ModePerm)
 	encoder := json.NewEncoder(outfile)
 	encoder.SetIndent("", "  ")
