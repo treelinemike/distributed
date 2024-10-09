@@ -53,6 +53,8 @@ func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 
 func main() {
 
+	var err error
+
 	// format log
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
@@ -68,7 +70,7 @@ func main() {
 	// load config
 	log.Println("Loading Raft config file")
 	var t common.Timeout
-	common.LoadRaftConfig(filename, servers, &t)
+	common.LoadRaftConfig(filename, servers, &t, &jsonfilename)
 	log.Printf("Config specifies election timeout range [%d, %d]\n", t.Min_ms, t.Max_ms)
 
 	// make sure provided selfkey is in map from config file
@@ -78,6 +80,26 @@ func main() {
 	} else {
 		log.Printf("Config specifies this server as %s:%s", servers[selfkey].Address, servers[selfkey].Port)
 	}
+
+	// load non-volatile state if it has been previously saved
+	log.Println("Reading non-volatile state from file: ", jsonfilename)
+	err = readnvstate()
+	if err != nil {
+		log.Fatal("Error initializing initial state")
+	}
+
+	// test setting term
+	setterm(14)
+	setleaderid("someserver")
+
+	/*
+		// test writing non-volatile state to JSON file
+		log.Println("Writing non-volatile state to file: ", jsonfilename)
+		err = writenvstate()
+		if err != nil {
+			log.Fatal("Error writing state")
+		}
+	*/
 
 	// serve RaftAPI
 	log.Println("Registering RPCs for access on port", servers[selfkey].Port)

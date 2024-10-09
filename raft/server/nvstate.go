@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 )
@@ -13,12 +12,20 @@ type nvstate struct {
 	Log      []string `json:"log"`
 }
 
+var jsonfilename string
 var st nvstate
 
-func main() {
+func setterm(p int) {
+	st.Term = p
+	writenvstate()
+}
 
-	// name of the json file to which we're storing our nonvolatile data
-	jsonfilename := "nvstate.json"
+func setleaderid(p string) {
+	st.LeaderID = p
+	writenvstate()
+}
+
+func readnvstate() error {
 
 	// load the json file if it exists, otherwise load default initial state values
 	filestat, err := os.Stat(jsonfilename)
@@ -48,10 +55,14 @@ func main() {
 		st.Log = append(st.Log, "first command", "second command")
 	}
 
-	// show nvstate
-	fmt.Println("nvstate struct contents: ", st)
+	// done
+	return nil
 
-	// now create an object and write to a json file
+}
+
+// now create an object and write to a json file
+func writenvstate() error {
+
 	log.Println("Writing nvstate to file...")
 	outfile, _ := os.OpenFile(jsonfilename, os.O_CREATE, os.ModePerm)
 	encoder := json.NewEncoder(outfile)
@@ -59,4 +70,6 @@ func main() {
 	encoder.Encode(st)
 	outfile.Close()
 
+	// done
+	return nil
 }

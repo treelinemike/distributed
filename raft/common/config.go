@@ -18,13 +18,14 @@ type (
 		Max_ms int `mapstructure:"Max_ms"`
 	}
 	RaftConfig struct {
-		Servers map[string]NetworkAddress `mapstructure:"Servers"`
-		Timeout Timeout                   `mapstructure:"Timeout"`
+		Servers         map[string]NetworkAddress `mapstructure:"Servers"`
+		Timeout         Timeout                   `mapstructure:"Timeout"`
+		NVStateFilename string                    `mapstructure:"NVStateFilename"`
 	}
 )
 
 // see: https://betterprogramming.pub/parsing-and-creating-yaml-in-go-crash-course-2ec10b7db850
-func LoadRaftConfig(configFileName string, Servers map[string]NetworkAddress, t *Timeout) error {
+func LoadRaftConfig(configFileName string, Servers map[string]NetworkAddress, t *Timeout, nvstatefilename *string) error {
 
 	configFile, err := os.ReadFile(configFileName)
 	if err != nil {
@@ -54,6 +55,9 @@ func LoadRaftConfig(configFileName string, Servers map[string]NetworkAddress, t 
 	// store timeout
 	t.Min_ms = cfg.Timeout.Min_ms
 	t.Max_ms = cfg.Timeout.Max_ms
+
+	// store NV state filename
+	*nvstatefilename = cfg.NVStateFilename
 
 	// done
 	return nil
