@@ -71,8 +71,8 @@ func main() {
 	// load config
 	log.Println("Loading Raft config file")
 	var t common.Timeout
-	common.LoadRaftConfig(filename, servers, &t, &jsonfilename)
-	// TODO: HERE! add server key to JSON filename
+	var jsonfilebase string
+	common.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
 	log.Printf("Config specifies election timeout range [%d, %d]\n", t.Min_ms, t.Max_ms)
 
 	// make sure provided selfkey is in map from config file
@@ -84,7 +84,8 @@ func main() {
 	}
 
 	// load non-volatile state if it has been previously saved
-	log.Println("Reading non-volatile state from file: ", jsonfilename)
+	jsonfilename = jsonfilebase + "_" + selfkey + ".json"
+	log.Println("Attempting to load non-volatile state from file: ", jsonfilename)
 	err = readnvstate()
 	if err != nil {
 		log.Fatal("Error initializing initial state")
@@ -93,15 +94,6 @@ func main() {
 	// test setting term
 	setterm(14)
 	setleaderid("someserver")
-
-	/*
-		// test writing non-volatile state to JSON file
-		log.Println("Writing non-volatile state to file: ", jsonfilename)
-		err = writenvstate()
-		if err != nil {
-			log.Fatal("Error writing state")
-		}
-	*/
 
 	// serve up our RPC API
 	log.Println("Registering RPCs for access on port", servers[selfkey].Port)
