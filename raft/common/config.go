@@ -2,6 +2,7 @@ package common
 
 import (
 	"log"
+	"net/rpc"
 	"os"
 
 	"github.com/mitchellh/mapstructure"
@@ -12,6 +13,7 @@ type (
 	NetworkAddress struct {
 		Address string `mapstructure:"Address"`
 		Port    string `mapstructure:"Port"`
+		Handle  *rpc.Client
 	}
 	Timeout struct {
 		Min_ms int `mapstructure:"Min_ms"`

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/rpc"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -71,6 +72,7 @@ func main() {
 	log.Println("Loading Raft config file")
 	var t common.Timeout
 	common.LoadRaftConfig(filename, servers, &t, &jsonfilename)
+	// TODO: HERE! add server key to JSON filename
 	log.Printf("Config specifies election timeout range [%d, %d]\n", t.Min_ms, t.Max_ms)
 
 	// make sure provided selfkey is in map from config file
@@ -101,7 +103,7 @@ func main() {
 		}
 	*/
 
-	// serve RaftAPI
+	// serve up our RPC API
 	log.Println("Registering RPCs for access on port", servers[selfkey].Port)
 	thisapi := new(RaftAPI)
 	rpc.Register(thisapi)
@@ -113,7 +115,48 @@ func main() {
 	}
 	go http.Serve(l, nil)
 
-	// start a timer
+	// connect to each server in the cluster
+	// use a bunch of goroutines with timeouts
+	// TODO: better handle the case when a server is initially crashed?
+	log.Println("Trying to connect to all other servers now...")
+	var wg sync.WaitGroup
+	for svr := range servers {
+		if svr != selfkey {
+			wg.Add(1)
+			go func(svr string) {
+				defer wg.Done()
+				// try connect to host repeatedly (even if OS times out the attempt very quickly)
+				// we will use our own timeout on the connection attempt
+				for {
+					log.Printf("Attempting connection to host %s:%s\n", servers[svr].Address, servers[svr].Port)
+					host, err := rpc.DialHTTP("tcp", servers[svr].Address+":"+servers[svr].Port)
+					if err == nil {
+						log.Printf("Connected to host %s:%s\n", servers[svr].Address, servers[svr].Port)
+
+						// store handle to server in struct in map
+						// Go doesn't make this easy
+						tempsvrdata := servers[svr]
+						tempsvrdata.Handle = host
+						servers[svr] = tempsvrdata
+						break
+					}
+				}
+			}(svr)
+		}
+	}
+	c := make(chan struct{})
+	go func() {
+		wg.Wait()
+		defer close(c)
+	}()
+	select {
+	case <-c:
+		log.Println("Connected to all servers")
+	case <-time.After(20 * time.Second):
+		log.Fatal("Timeout connecting to servers")
+	}
+
+	// start the election timeout timer
 	electiontimer = time.NewTimer(100 * time.Second)
 	i := 0
 	for {
@@ -123,6 +166,14 @@ func main() {
 		<-electiontimer.C
 		log.Printf("%d: calling election!\n", i)
 		i++
+
+		// request votes from all other servers
+		for svr := range servers {
+			if svr != selfkey {
+				log.Printf("We should ask server %s: %s:%s ", svr, servers[svr].Address, servers[svr].Port)
+			}
+		}
+
 	}
 
 }

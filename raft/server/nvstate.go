@@ -4,23 +4,29 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"sync"
 )
 
 type nvstate struct {
 	Term     int      `json:"term"`
 	LeaderID string   `json:"leaderID"`
 	Log      []string `json:"log"`
+	Lock     sync.RWMutex
 }
 
 var jsonfilename string
 var st nvstate
 
 func setterm(p int) {
+	st.Lock.Lock()
+	defer st.Lock.Unlock()
 	st.Term = p
 	writenvstate()
 }
 
 func setleaderid(p string) {
+	st.Lock.Lock()
+	defer st.Lock.Unlock()
 	st.LeaderID = p
 	writenvstate()
 }
@@ -41,14 +47,13 @@ func readnvstate() error {
 		// load json file into nvstate
 		log.Println("File ", jsonfilename, " exists, loading nvstate from it...")
 		infile, _ := os.OpenFile(jsonfilename, os.O_RDONLY, os.ModePerm)
+		defer infile.Close()
 		decoder := json.NewDecoder(infile)
 		decoder.Decode(&st)
-		infile.Close()
 
 	} else {
 
 		// JSON FILE DOES NOT EXIST
-
 		log.Println("File ", jsonfilename, " does not exist, so set nvstate to default initial state...")
 		st.Term = 12
 		st.LeaderID = "Server1"
@@ -65,10 +70,10 @@ func writenvstate() error {
 
 	log.Println("Writing nvstate to file...")
 	outfile, _ := os.OpenFile(jsonfilename, os.O_CREATE, os.ModePerm)
+	defer outfile.Close()
 	encoder := json.NewEncoder(outfile)
 	encoder.SetIndent("", "  ")
 	encoder.Encode(st)
-	outfile.Close()
 
 	// done
 	return nil

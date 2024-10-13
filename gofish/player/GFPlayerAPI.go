@@ -55,7 +55,7 @@ func (gfapi *GFPlayerAPI) SetConfig(c gfcommon.GFPlayerConfig, resp *int) error 
 	var err error
 	host, err = rpc.DialHTTP("tcp", config.Host.Address+":"+config.Host.Port)
 	if err != nil {
-		log.Printf("Error connecting to host %s:%s\n"+config.Host.Address, config.Host.Port)
+		log.Printf("Error connecting to host %s:%s\n", config.Host.Address, config.Host.Port)
 	}
 	log.Println("Connected to host")
 	return nil
