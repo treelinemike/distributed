@@ -121,9 +121,11 @@ func (gfapi *GFPlayerAPI) EndGame(winStatus int, resp *int) error {
 		log.Printf("Lost game with %d book(s) collected", numBooks)
 	case 1:
 		log.Printf("Won game with %d book(s) collected", numBooks)
+		exec.Command("blink1-off.sh").Output()
 		exec.Command("blink1-glimmer.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
 	default:
 		log.Printf("Tied with %d other player(s) for the win with %d books collected", winStatus-1, numBooks)
+		exec.Command("blink1-off.sh").Output()
 		exec.Command("blink1-glimmer.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
 	}
 
