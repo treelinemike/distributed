@@ -121,6 +121,7 @@ func (gfapi *GFPlayerAPI) EndGame(winStatus int, resp *int) error {
 		log.Printf("Lost game with %d book(s) collected", numBooks)
 	case 1:
 		log.Printf("Won game with %d book(s) collected", numBooks)
+		exec.Command("blink1-glimmer.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
 	default:
 		log.Printf("Tied with %d other player(s) for the win with %d books collected", winStatus-1, numBooks)
 	}
@@ -141,16 +142,10 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 
 	// handle blink(1) indicator and logging for turn start/end
 	log.Printf("Starting turn with %d books and hand (%s)\n", numBooks, hand.String())
-	_, err := exec.Command("blink1-on.sh").Output()
-	if err != nil {
-		log.Println("Could not turn on blink(1) indicator")
-	}
+	exec.Command("blink1-on.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
 	defer func() {
-		time.Sleep(500 * time.Millisecond) // delay so we can watch gameplay
-		_, err = exec.Command("blink1-off.sh").Output()
-		if err != nil {
-			log.Println("Could not turn off blink(1) indicator")
-		}
+		time.Sleep(500 * time.Millisecond)     // delay so we can watch gameplay
+		exec.Command("blink1-off.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
 		log.Printf("Ending turn with %d books and hand (%s)\n", numBooks, hand.String())
 	}()
 
@@ -160,7 +155,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		// if hand is empty, try to take a card from the deck
 		if hand.NumCards() == 0 {
 			c = new(playingcards.Card)
-			err = host.Call("GFHostAPI.TakeTopCard", j, c)
+			err := host.Call("GFHostAPI.TakeTopCard", j, c)
 			if err != nil {
 				log.Fatal("Error retrieving top card from deck")
 			}
@@ -217,7 +212,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 		} else {
 			// try to pull a card from the deck
 			c = new(playingcards.Card) // need to reset card b/c a zero value in struct from RPC won't get gobbed, so old value will persist!
-			err = host.Call("GFHostAPI.TakeTopCard", j, c)
+			err := host.Call("GFHostAPI.TakeTopCard", j, c)
 			if err != nil {
 				log.Fatal("Error retrieving top card from deck")
 			}
