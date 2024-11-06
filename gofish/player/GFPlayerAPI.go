@@ -122,17 +122,11 @@ func (gfapi *GFPlayerAPI) EndGame(winStatus int, resp *int) error {
 	case 1:
 		log.Printf("Won game with %d book(s) collected", numBooks)
 		exec.Command("blink1-off.sh").Output()
-		_, err := exec.Command("blink1-glimmer.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
-		if err != nil {
-			log.Printf("Glimmer error: %v\n", err)
-		}
+		exec.Command("blink1-glimmer.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
 	default:
 		log.Printf("Tied with %d other player(s) for the win with %d books collected", winStatus-1, numBooks)
 		exec.Command("blink1-off.sh").Output()
-		_, err := exec.Command("blink1-glimmer.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
-		if err != nil {
-			log.Printf("Glimmer error: %v\n", err)
-		}
+		exec.Command("blink1-glimmer.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
 	}
 
 	// close connection to host
@@ -153,7 +147,7 @@ func (gfapi *GFPlayerAPI) TakeTurn(_ int, resp *gfcommon.GFPlayerReturn) error {
 	log.Printf("Starting turn with %d books and hand (%s)\n", numBooks, hand.String())
 	exec.Command("blink1-on.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
 	defer func() {
-		time.Sleep(250 * time.Millisecond)     // delay so we can watch gameplay
+		time.Sleep(100 * time.Millisecond)     // delay so we can watch gameplay
 		exec.Command("blink1-off.sh").Output() // don't handle an error on this, ok if it fails (i.e. no blink1 configured)
 		log.Printf("Ending turn with %d books and hand (%s)\n", numBooks, hand.String())
 	}()
