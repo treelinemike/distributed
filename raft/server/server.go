@@ -15,7 +15,34 @@ import (
 
 type RaftAPI int
 
-var electiontimer *time.Timer
+// globals that need to be accessed by RPCs
+var commitIdx int = 0
+var lastApplied int = 0
+
+type rafttimer struct {
+	timer   *time.Timer
+	timeout common.Timeout
+}
+
+var electiontimer rafttimer
+
+func (t *rafttimer) reset() error {
+	randtval := time.Duration(rand.IntN(t.timeout.Max_ms-t.timeout.Min_ms)+t.timeout.Min_ms) * time.Millisecond
+	t.timer.Reset(randtval)
+	log.Printf("Setting election timeout at %v", randtval)
+	return nil
+}
+
+func (t *rafttimer) stop() error {
+	t.timer.Stop()
+	log.Printf("Stopping election timer")
+	return nil
+}
+
+func (t *rafttimer) settimeout(to common.Timeout) error {
+	t.timeout = to
+	return nil
+}
 
 // non-volitile storage --- how are we going to implement this?
 var currentTerm int = 0 // can't do short declaration := at package level
@@ -31,13 +58,16 @@ type AEParams struct {
 }
 
 func (r *RaftAPI) AppendEntries(p AEParams, resp *int) error {
+	electiontimer.stop()
 	fmt.Printf("AppendEntriesRPC: term %d\n", p.term)
+
+	electiontimer.reset()
 	return nil
 }
 
 type RVParams struct {
 	term         int
-	candidateId  int
+	candidateId  string
 	lastLogIndex int
 	lastLogTerm  int
 }
@@ -49,6 +79,7 @@ type RVResp struct {
 
 func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 	fmt.Printf("RequestVoteRPC: term %d\n", p.term)
+
 	return nil
 }
 
@@ -70,10 +101,11 @@ func main() {
 
 	// load config
 	log.Println("Loading Raft config file")
-	var t common.Timeout
 	var jsonfilebase string
+	var t common.Timeout
 	common.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
 	log.Printf("Config specifies election timeout range [%d, %d]\n", t.Min_ms, t.Max_ms)
+	electiontimer.settimeout(t)
 
 	// make sure provided selfkey is in map from config file
 	_, ok := servers[selfkey]
@@ -120,7 +152,7 @@ func main() {
 				// try connect to host repeatedly (even if OS times out the attempt very quickly)
 				// we will use our own timeout on the connection attempt
 				for {
-					log.Printf("Attempting connection to host %s:%s\n", servers[svr].Address, servers[svr].Port)
+					//log.Printf("Attempting connection to host %s:%s\n", servers[svr].Address, servers[svr].Port)
 					host, err := rpc.DialHTTP("tcp", servers[svr].Address+":"+servers[svr].Port)
 					if err == nil {
 						log.Printf("Connected to host %s:%s\n", servers[svr].Address, servers[svr].Port)
@@ -144,25 +176,35 @@ func main() {
 	select {
 	case <-c:
 		log.Println("Connected to all servers")
-	case <-time.After(20 * time.Second):
+	case <-time.After(5 * time.Minute):
 		log.Fatal("Timeout connecting to servers")
 	}
 
 	// start the election timeout timer
-	electiontimer = time.NewTimer(100 * time.Second)
+	electiontimer.timer = time.NewTimer(100 * time.Second)
+
 	i := 0
 	for {
-		randtval := time.Duration(rand.IntN(t.Max_ms-t.Min_ms)+t.Min_ms) * time.Millisecond
-		log.Printf("Setting election timeout at %v", randtval)
-		electiontimer.Reset(randtval)
-		<-electiontimer.C
+		electiontimer.reset()
+		<-electiontimer.timer.C
 		log.Printf("%d: calling election!\n", i)
 		i++
+
+		// prepare parameters for requesting vote
+		var rvp RVParams
+		rvp.candidateId = selfkey
+		rvp.lastLogIndex = 0 // TODO: add correct value
+		rvp.term = 0         // TODO: add correct value
 
 		// request votes from all other servers
 		for svr := range servers {
 			if svr != selfkey {
 				log.Printf("We should ask server %s: %s:%s ", svr, servers[svr].Address, servers[svr].Port)
+				var rvr RVResp
+				err := servers[svr].Handle.Call("RequestVote", rvp, &rvr)
+				if err != nil {
+					log.Fatalf("Could not request vote from server %s\n", svr)
+				}
 			}
 		}
 
