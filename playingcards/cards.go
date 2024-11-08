@@ -55,13 +55,17 @@ func (c Card) String() string {
 	str += NumToCardChar(c.Val)
 	switch c.CardSuit {
 	case Clubs:
-		str += "\u2663"
+		//str += "\u2663"
+		str += "\xe2\x99\xa3"
 	case Diamonds:
-		str += "\u2666"
+		//str += "\u2666"
+		str += "\xe2\x99\xa6"
 	case Hearts:
-		str += "\u2665"
+		//str += "\u2665"
+		str += "\xe2\x99\xa5"
 	case Spades:
-		str += "\u2660"
+		//str += "\u2660"
+		str += "\xe2\x99\xa0"
 	}
 	return str
 }
