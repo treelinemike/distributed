@@ -20,9 +20,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for cols := 0; cols < 16; cols++ {
 		for rows := 0; rows < 16; rows++ {
 			cell := ebiten.NewImage(40, 40)
-			cell.Fill(color.RGBA{0xc0, 0x00, 0xc0, 0xff})
+			cell.Fill(color.RGBA{0x50, 0x50, 0x50, 0xff})
 			drawopts := new(ebiten.DrawImageOptions)
-			drawopts.GeoM.Translate(float64(2+42*cols), float64(2+42*rows))
+			drawopts.GeoM.Translate(float64(4+44*cols), float64(4+44*rows))
 			screen.DrawImage(cell, drawopts)
 		}
 	}
@@ -38,7 +38,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	ebiten.SetWindowSize(674, 674)
+	ebiten.SetWindowSize(708, 708)
 	ebiten.SetWindowTitle("Hello, World!")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
