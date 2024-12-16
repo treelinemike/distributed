@@ -26,14 +26,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			screen.DrawImage(cell, drawopts)
 		}
 	}
-	scale := ebiten.Monitor().DeviceScaleFactor()
+	scale := ebiten.Monitor().DeviceScaleFactor() * 1.2
 	msg := fmt.Sprintf("Device Scale Ratio: %0.2f", scale)
 	ebitenutil.DebugPrint(screen, msg)
 
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	s := ebiten.Monitor().DeviceScaleFactor()
+	s := ebiten.Monitor().DeviceScaleFactor() * 1.2
 	return int(float64(outsideWidth) * s), int(float64(outsideHeight) * s)
 }
 
