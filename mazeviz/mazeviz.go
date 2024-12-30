@@ -7,6 +7,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Game struct{}
@@ -30,6 +31,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	msg := fmt.Sprintf("Device Scale Ratio: %0.2f", scale)
 	ebitenutil.DebugPrint(screen, msg)
 
+	var path vector.Path
+	path.MoveTo(0,0)
+	path.LineTo(100,100)
+	path.AppendVerticesAndIndicesForStroke()
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
