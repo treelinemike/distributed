@@ -32,9 +32,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, msg)
 
 	var path vector.Path
-	path.MoveTo(0,0)
-	path.LineTo(100,100)
-	path.AppendVerticesAndIndicesForStroke()
+	path.MoveTo(0, 0)
+	path.LineTo(100, 100)
+	//path.AppendVerticesAndIndicesForStroke()
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
