@@ -7,7 +7,7 @@ import (
 func main() {
 
 	// load a maze configuration from json
-	readmaze, err := readjsonmaze("mazetest.json")
+	readmaze, err := readjsonmaze("mazein.json")
 	if err != nil {
 		log.Fatalf("readjsonmaze error: %v\n", err)
 	}
