@@ -1,6 +1,7 @@
 package main
 
 import (
+	"engg415/mazeviz"
 	"log"
 )
 
@@ -13,16 +14,21 @@ func main() {
 	}
 	log.Printf("Read: %v\n", readmaze)
 
+	//mazeviz.Setparams(int(readmaze.M), int(readmaze.N))
+
+	mazeviz.Setparams(1, 8)
+	mazeviz.Start("Maze Generator")
+
 	// generate a maze configuration
 	writemaze := new(Mazedata)
 	writemaze.Title = "test output"
 	writemaze.Author = "kokko"
-	writemaze.Description = "None"
+	writemaze.Description = ""
 	writemaze.M = 3
 	writemaze.N = 3
 	newelement := new(Mazeelement)
 	newelement.Type = 100
-	newelement.Description = "No description"
+	newelement.Description = ""
 	newelement.Data = []float64{0, 1, 0, 0, 1, 0, 0, 1, 0}
 	writemaze.Elements = append(writemaze.Elements, *newelement)
 
