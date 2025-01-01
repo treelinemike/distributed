@@ -3,6 +3,8 @@ package main
 import (
 	"engg415/mazeviz"
 	"log"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func main() {
@@ -16,8 +18,18 @@ func main() {
 
 	//mazeviz.Setparams(int(readmaze.M), int(readmaze.N))
 
-	mazeviz.Setparams(1, 8)
-	mazeviz.Start("Maze Generator")
+	p := new(mazeviz.Params)
+	p.Setparams(int(readmaze.M), int(readmaze.N))
+
+	game, err := mazeviz.NewGame(*p)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ebiten.SetWindowSize(p.WW, p.WH)
+	ebiten.SetWindowTitle("Maze Generator")
+	if err := ebiten.RunGame(game); err != nil {
+		log.Fatal(err)
+	}
 
 	// generate a maze configuration
 	writemaze := new(Mazedata)

@@ -1,76 +1,84 @@
 package mazeviz
 
 import (
-	"fmt"
+	"errors"
 	"image/color"
-	"log"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-var params struct {
-	m   int
-	n   int
-	csz int
-	csp int
-	csk int
-	ww  int
-	wh  int
+type Params struct {
+	M   int
+	N   int
+	CSZ int
+	CSP int
+	CSK int
+	WW  int
+	WH  int
 }
 
-func Setparams(m int, n int) {
-	params.m = m
-	params.n = n
+func (p *Params) Setparams(m int, n int) {
+	p.M = m
+	p.N = n
 
 	numcells := max(m, n)
-	params.csz = int(math.Round(708.0 / (1.1*float64(numcells) + 0.1)))
-	params.csp = int(math.Floor(((708.0 - float64(numcells*params.csz)) / float64(numcells+1))))
-	params.csk = params.csz + params.csp
-	params.ww = params.csp + n*params.csk
-	params.wh = params.csp + m*params.csk
+	p.CSZ = int(math.Round(708.0 / (1.1*float64(numcells) + 0.1)))
+	p.CSP = int(math.Floor(((708.0 - float64(numcells*p.CSZ)) / float64(numcells+1))))
+	p.CSK = p.CSZ + p.CSP
+	p.WW = p.CSP + n*p.CSK
+	p.WH = p.CSP + m*p.CSK
 
-	fmt.Printf("csz: %d\n", params.csz)
-	fmt.Printf("csp: %d\n", params.csp)
-	fmt.Printf("csk: %d\n", params.csk)
+	/*
+		fmt.Printf("csz: %d\n", p.CSZ)
+		fmt.Printf("csp: %d\n", p.CSP)
+		fmt.Printf("csk: %d\n", p.CSK)
+		fmt.Printf("ww: %d\n", p.WW)
+		fmt.Printf("wh: %d\n", p.WH)
+	*/
 }
 
-func Start(windowtitle string) {
-	ebiten.SetWindowSize(params.ww, params.wh)
-	ebiten.SetWindowTitle(windowtitle)
-	if err := ebiten.RunGame(&Game{}); err != nil {
-		log.Fatal(err)
+type Game struct {
+	image *ebiten.Image
+	maze  *Maze
+}
+
+func NewGame(p Params) (*Game, error) {
+	g := new(Game)
+	g.image = new(ebiten.Image)
+	m, err := NewMaze(p)
+	if err != nil {
+		return g, errors.New("couldn't initialize maze")
 	}
+	g.maze = m
+	return g, nil
 }
-
-type Game struct{}
 
 func (g *Game) Update() error {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		x, y := ebiten.CursorPosition()
+		//fmt.Printf("click at (%d,%d)\n", x, y)
+		min_idx := 0
+		min_dist := 1e6
+		for i, c := range g.maze.cells {
+			dist := pixdist(float64(x), float64(y), c.CX, c.CY)
+			if dist < min_dist {
+				min_dist = dist
+				min_idx = i
+			}
+		}
+		if g.maze.cells[min_idx].Color.G == 0x50 {
+			g.maze.cells[min_idx].Color = color.RGBA{0x50, 0x00, 0x00, 0xff}
+		} else {
+			g.maze.cells[min_idx].Color = color.RGBA{0x50, 0x50, 0x50, 0xff}
+		}
+	}
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	//ebitenutil.DebugPrint(screen, "Hello, World!")
-	for cols := 0; cols < params.n; cols++ {
-		for rows := 0; rows < params.m; rows++ {
-			cell := ebiten.NewImage(params.csz, params.csz)
-			cell.Fill(color.RGBA{0x50, 0x50, 0x50, 0xff})
-			drawopts := new(ebiten.DrawImageOptions)
-			drawopts.GeoM.Translate(float64(params.csp+params.csk*cols), float64(params.csp+params.csk*rows))
-			screen.DrawImage(cell, drawopts)
-		}
-	}
-	//scale := ebiten.Monitor().DeviceScaleFactor()
-
-	//msg := fmt.Sprintf("Device Scale Ratio: %0.2f", scale)
-	//ebitenutil.DebugPrint(screen, msg)
-
-	var path vector.Path
-	path.MoveTo(0, 0)
-	path.LineTo(100, 100)
-	//path.AppendVerticesAndIndicesForStroke()
-
+	g.maze.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
