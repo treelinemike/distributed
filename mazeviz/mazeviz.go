@@ -2,6 +2,7 @@ package mazeviz
 
 import (
 	"errors"
+	"fmt"
 	"image/color"
 	"math"
 
@@ -58,7 +59,6 @@ func NewGame(p Params) (*Game, error) {
 func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
-		//fmt.Printf("click at (%d,%d)\n", x, y)
 		min_idx := 0
 		min_dist := 1e6
 		for i, c := range g.maze.cells {
@@ -73,6 +73,8 @@ func (g *Game) Update() error {
 		} else {
 			g.maze.cells[min_idx].Color = color.RGBA{0x50, 0x50, 0x50, 0xff}
 		}
+		fmt.Printf("Click at (%d,%d) -> cell %d\n", x, y, min_idx)
+
 	}
 	return nil
 }
