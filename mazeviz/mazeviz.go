@@ -72,6 +72,18 @@ func (g *Game) Update() error {
 			}
 		}
 
+		// now search cells
+		for i, c := range g.maze.cells {
+			if (float32(x) >= c.Xmin) && (float32(x) <= c.Xmax) && (float32(y) >= c.Ymin) && (float32(y) <= c.Ymax) {
+				if c.Type == C_none {
+					g.maze.cells[i].Type = C_goal
+				} else {
+					g.maze.cells[i].Type = C_none
+				}
+				break
+			}
+		}
+
 	}
 	return nil
 }

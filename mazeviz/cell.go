@@ -37,6 +37,11 @@ func (c *Cell) Draw(screen *ebiten.Image) {
 	cell := ebiten.NewImage(c.Size, c.Size)
 	drawopts := new(ebiten.DrawImageOptions)
 	drawopts.GeoM.Translate(float64(c.X), float64(c.Y))
-	cell.Fill(c.Color)
+	switch c.Type {
+	case C_goal:
+		cell.Fill(color.RGBA{0x00, 0xa0, 0x00, 0xff})
+	default:
+		cell.Fill(color.RGBA{0x55, 0x55, 0x55, 0xff})
+	}
 	screen.DrawImage(cell, drawopts)
 }

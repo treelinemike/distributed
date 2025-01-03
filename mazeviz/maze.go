@@ -62,11 +62,7 @@ func NewMaze(p Params) (*Maze, error) {
 			l.Ymin = l.Y1 + float32(p.CSP)/2
 			l.Ymax = l.Y0 - float32(p.CSP)/2
 			l.Width = float32(p.CSP)
-			/*if col == 0 || col == p.N {
-				l.Type = W_true
-			} else {
-				l.Type = W_none
-			}*/
+			l.Type = W_none
 			m.lines = append(m.lines, *l)
 		}
 
@@ -84,12 +80,7 @@ func NewMaze(p Params) (*Maze, error) {
 				l.Ymin = l.Y0 - float32(p.CSP)/2
 				l.Ymax = l.Y0 + float32(p.CSP)/2
 				l.Width = float32(p.CSP)
-				/*
-					if row == 0 || row == p.M {
-						l.Type = W_true
-					} else {
-						l.Type = W_none
-					}*/
+				l.Type = W_none
 				m.lines = append(m.lines, *l)
 
 				// cell on top of the line
@@ -105,6 +96,7 @@ func NewMaze(p Params) (*Maze, error) {
 					c.Ymin = float32(c.Y)
 					c.Ymax = c.Ymin + float32(c.Size)
 					c.Color = color.RGBA{0x50, 0x50, 0x50, 0xff}
+					c.Type = C_none
 					m.cells = append(m.cells, *c)
 				}
 
