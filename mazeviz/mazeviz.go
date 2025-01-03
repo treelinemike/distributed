@@ -3,7 +3,6 @@ package mazeviz
 import (
 	"errors"
 	"fmt"
-	"image/color"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -43,6 +42,7 @@ func (p *Params) Setparams(m int, n int) {
 type Game struct {
 	image *ebiten.Image
 	maze  *Maze
+	count int
 }
 
 func NewGame(p Params) (*Game, error) {
@@ -59,21 +59,19 @@ func NewGame(p Params) (*Game, error) {
 func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
-		min_idx := 0
-		min_dist := 1e6
-		for i, c := range g.maze.cells {
-			dist := pixdist(float64(x), float64(y), c.CX, c.CY)
-			if dist < min_dist {
-				min_dist = dist
-				min_idx = i
+
+		// search lines first
+		for i, l := range g.maze.lines {
+			if (float32(x) >= l.Xmin) && (float32(x) <= l.Xmax) && (float32(y) >= l.Ymin) && (float32(y) <= l.Ymax) {
+				fmt.Println("Click")
+				if l.Type == W_none {
+					g.maze.lines[i].Type = W_true
+				} else {
+					g.maze.lines[i].Type = W_none
+				}
+				break
 			}
 		}
-		if g.maze.cells[min_idx].Color.G == 0x50 {
-			g.maze.cells[min_idx].Color = color.RGBA{0x50, 0x00, 0x00, 0xff}
-		} else {
-			g.maze.cells[min_idx].Color = color.RGBA{0x50, 0x50, 0x50, 0xff}
-		}
-		fmt.Printf("Click at (%d,%d) -> cell %d\n", x, y, min_idx)
 
 	}
 	return nil

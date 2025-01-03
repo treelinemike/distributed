@@ -6,14 +6,24 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+type Celltype int
+
+const (
+	C_none Celltype = iota
+	C_start
+	C_goal
+)
+
 type Cell struct {
-	X     int // RELATIVE TO SCREEN (not maze, x/y sawpped in maze)
-	Y     int // RELATIVE TO SCREEN (not maze, x/y sawpped in maze)
-	CX    float64
-	CY    float64
-	Size  int
-	Color color.RGBA
-	Text  string
+	X                      int // RELATIVE TO SCREEN (not maze, x/y sawpped in maze)
+	Y                      int // RELATIVE TO SCREEN (not maze, x/y sawpped in maze)
+	Xmin, Xmax, Ymin, Ymax float32
+	CX                     float32
+	CY                     float32
+	Size                   int
+	Color                  color.RGBA
+	Text                   string
+	Type                   Celltype
 }
 
 func (c *Cell) Updpate(x int, y int, color color.RGBA, text string) {

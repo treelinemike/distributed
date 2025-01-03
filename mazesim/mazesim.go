@@ -20,6 +20,7 @@ func main() {
 
 	p := new(mazeviz.Params)
 	p.Setparams(int(readmaze.M), int(readmaze.N))
+	//p.Setparams(3, 3)
 
 	game, err := mazeviz.NewGame(*p)
 	if err != nil {
