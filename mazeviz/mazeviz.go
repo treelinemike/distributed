@@ -9,15 +9,16 @@ import (
 )
 
 type Params struct {
-	M        int
-	N        int
-	CSZ      int
-	CSP      int
-	CSK      int
-	WW       int
-	WH       int
-	Walls    []int32
-	Cellvals []int32
+	M         int
+	N         int
+	CSZ       int
+	CSP       int
+	CSK       int
+	WW        int
+	WH        int
+	Walltypes []Walltype
+	Celltypes []Celltype
+	Cellvals  []float32
 }
 
 func (p *Params) Setparams(m int, n int) {
@@ -63,9 +64,12 @@ func (g *Game) Update() error {
 		// search lines first
 		for i, l := range g.maze.lines {
 			if (float32(x) >= l.Xmin) && (float32(x) <= l.Xmax) && (float32(y) >= l.Ymin) && (float32(y) <= l.Ymax) {
-				if l.Type == W_none {
-					g.maze.lines[i].Type = W_true
-				} else {
+				switch l.Type {
+				case W_none:
+					g.maze.lines[i].Type = W_latent
+				case W_latent:
+					g.maze.lines[i].Type = W_observed
+				case W_observed:
 					g.maze.lines[i].Type = W_none
 				}
 				break

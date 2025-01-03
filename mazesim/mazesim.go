@@ -22,14 +22,38 @@ func main() {
 
 	p.Setparams(int(readmaze.M), int(readmaze.N))
 	for _, e := range readmaze.Elements {
-		if e.Type == 0 {
+		switch e.Type {
+		case 0: // wall types
 			for _, v := range e.Data {
-				p.Walls = append(p.Walls, int32(v))
+				var wt mazeviz.Walltype
+				switch v {
+				case 0:
+					wt = mazeviz.W_none
+				case 1:
+					wt = mazeviz.W_latent
+				case 2:
+					wt = mazeviz.W_observed
+				case 3:
+					wt = mazeviz.W_phantom
+				}
+				p.Walltypes = append(p.Walltypes, wt)
 			}
-		}
-		if e.Type == 100 {
+		case 100: // cell types
 			for _, v := range e.Data {
-				p.Cellvals = append(p.Walls, int32(v))
+				var ct mazeviz.Celltype
+				switch v {
+				case 0:
+					ct = mazeviz.C_none
+				case 1:
+					ct = mazeviz.C_goal
+				case 2:
+					ct = mazeviz.C_start
+				}
+				p.Celltypes = append(p.Celltypes, ct)
+			}
+		case 101: // cell values
+			for _, v := range e.Data {
+				p.Cellvals = append(p.Cellvals, float32(v))
 			}
 		}
 

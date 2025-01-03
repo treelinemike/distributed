@@ -11,9 +11,10 @@ import (
 type Walltype int
 
 const (
-	W_none Walltype = iota
-	W_true
-	W_observed
+	W_none     Walltype = iota // no wall here
+	W_latent                   // true wall here, but not yet observed
+	W_observed                 // true wall here, and it has been observed
+	W_phantom                  // not a true wall, but erroneously observed as a wall
 )
 
 type Line struct {
@@ -49,14 +50,22 @@ func (l *Line) Draw(screen *ebiten.Image) {
 		vs[i].SrcX = 1
 		vs[i].SrcY = 1
 		switch l.Type {
-		case W_true:
+		case W_observed:
 			vs[i].ColorR = 0.85
 			vs[i].ColorG = 0
 			vs[i].ColorB = 0
-		default:
+		case W_latent:
+			vs[i].ColorR = 0.85
+			vs[i].ColorG = 0.5
+			vs[i].ColorB = 0.5
+		case W_none:
 			vs[i].ColorR = 0.5
 			vs[i].ColorG = 0.5
 			vs[i].ColorB = 0.5
+		case W_phantom:
+			vs[i].ColorR = 0.5
+			vs[i].ColorG = 0.85
+			vs[i].ColorB = 0.85
 		}
 		vs[i].ColorA = 1
 	}

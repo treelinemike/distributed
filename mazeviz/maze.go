@@ -1,6 +1,7 @@
 package mazeviz
 
 import (
+	"fmt"
 	"image/color"
 	"math"
 
@@ -18,10 +19,6 @@ type Maze struct {
 	lines []Line
 }
 
-func pixdist(x0, y0, x1, y1 float32) float32 {
-	return float32(math.Sqrt(math.Pow(float64(x1-x0), 2.0) + math.Pow(float64(y1-y0), 2)))
-}
-
 func (m *Maze) Draw(screen *ebiten.Image) {
 
 	// draw cells first
@@ -36,9 +33,16 @@ func (m *Maze) Draw(screen *ebiten.Image) {
 		}
 	}
 
+	// draw latent lines
+	for _, l := range m.lines {
+		if l.Type == W_latent {
+			l.Draw(screen)
+		}
+	}
+
 	// finally draw true lines
 	for _, l := range m.lines {
-		if l.Type == W_true {
+		if l.Type == W_observed {
 			l.Draw(screen)
 		}
 	}
@@ -46,6 +50,8 @@ func (m *Maze) Draw(screen *ebiten.Image) {
 
 func NewMaze(p Params) (*Maze, error) {
 	m := new(Maze)
+
+	celltextinit(math.Round(float64(p.CSZ) / 3))
 
 	for col := 0; col <= p.N; col++ {
 
@@ -105,14 +111,23 @@ func NewMaze(p Params) (*Maze, error) {
 	}
 
 	// add lines from JSON
-	if len(p.Walls) == len(m.lines) {
-		for i, w := range p.Walls {
-			switch w {
-			case 1:
-				m.lines[i].Type = W_true
-			default:
-				m.lines[i].Type = W_none
-			}
+	if len(p.Walltypes) == len(m.lines) {
+		for i, w := range p.Walltypes {
+			m.lines[i].Type = w
+		}
+	}
+
+	// add cell types from JSON
+	if len(p.Cellvals) == len(m.cells) {
+		for i, cv := range p.Cellvals {
+			m.cells[i].Text = fmt.Sprintf("%d", int(cv))
+		}
+	}
+
+	// add cell values from JSON
+	if len(p.Celltypes) == len(m.cells) {
+		for i, ct := range p.Celltypes {
+			m.cells[i].Type = ct
 		}
 	}
 
