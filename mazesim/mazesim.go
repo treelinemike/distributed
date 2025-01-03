@@ -19,8 +19,8 @@ func main() {
 	//mazeviz.Setparams(int(readmaze.M), int(readmaze.N))
 
 	p := new(mazeviz.Params)
-	p.Setparams(int(readmaze.M), int(readmaze.N))
 
+	p.Setparams(int(readmaze.M), int(readmaze.N))
 	for _, e := range readmaze.Elements {
 		if e.Type == 0 {
 			for _, v := range e.Data {
@@ -35,7 +35,7 @@ func main() {
 
 	}
 
-	//p.Setparams(3, 3)
+	//p.Setparams(16, 16)
 
 	game, err := mazeviz.NewGame(*p)
 	if err != nil {
