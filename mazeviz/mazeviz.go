@@ -2,7 +2,6 @@ package mazeviz
 
 import (
 	"errors"
-	"fmt"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -10,13 +9,15 @@ import (
 )
 
 type Params struct {
-	M   int
-	N   int
-	CSZ int
-	CSP int
-	CSK int
-	WW  int
-	WH  int
+	M        int
+	N        int
+	CSZ      int
+	CSP      int
+	CSK      int
+	WW       int
+	WH       int
+	Walls    []int32
+	Cellvals []int32
 }
 
 func (p *Params) Setparams(m int, n int) {
@@ -42,7 +43,6 @@ func (p *Params) Setparams(m int, n int) {
 type Game struct {
 	image *ebiten.Image
 	maze  *Maze
-	count int
 }
 
 func NewGame(p Params) (*Game, error) {
@@ -63,7 +63,6 @@ func (g *Game) Update() error {
 		// search lines first
 		for i, l := range g.maze.lines {
 			if (float32(x) >= l.Xmin) && (float32(x) <= l.Xmax) && (float32(y) >= l.Ymin) && (float32(y) <= l.Ymax) {
-				fmt.Println("Click")
 				if l.Type == W_none {
 					g.maze.lines[i].Type = W_true
 				} else {

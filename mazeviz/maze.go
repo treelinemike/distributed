@@ -62,11 +62,11 @@ func NewMaze(p Params) (*Maze, error) {
 			l.Ymin = l.Y1 + float32(p.CSP)/2
 			l.Ymax = l.Y0 - float32(p.CSP)/2
 			l.Width = float32(p.CSP)
-			if col == 0 || col == p.N {
+			/*if col == 0 || col == p.N {
 				l.Type = W_true
 			} else {
 				l.Type = W_none
-			}
+			}*/
 			m.lines = append(m.lines, *l)
 		}
 
@@ -84,11 +84,12 @@ func NewMaze(p Params) (*Maze, error) {
 				l.Ymin = l.Y0 - float32(p.CSP)/2
 				l.Ymax = l.Y0 + float32(p.CSP)/2
 				l.Width = float32(p.CSP)
-				if row == 0 || row == p.M {
-					l.Type = W_true
-				} else {
-					l.Type = W_none
-				}
+				/*
+					if row == 0 || row == p.M {
+						l.Type = W_true
+					} else {
+						l.Type = W_none
+					}*/
 				m.lines = append(m.lines, *l)
 
 				// cell on top of the line
@@ -107,6 +108,18 @@ func NewMaze(p Params) (*Maze, error) {
 					m.cells = append(m.cells, *c)
 				}
 
+			}
+		}
+	}
+
+	// add lines from JSON
+	if len(p.Walls) == len(m.lines) {
+		for i, w := range p.Walls {
+			switch w {
+			case 1:
+				m.lines[i].Type = W_true
+			default:
+				m.lines[i].Type = W_none
 			}
 		}
 	}

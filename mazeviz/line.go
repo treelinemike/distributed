@@ -50,7 +50,7 @@ func (l *Line) Draw(screen *ebiten.Image) {
 		vs[i].SrcY = 1
 		switch l.Type {
 		case W_true:
-			vs[i].ColorR = 1
+			vs[i].ColorR = 0.85
 			vs[i].ColorG = 0
 			vs[i].ColorB = 0
 		default:

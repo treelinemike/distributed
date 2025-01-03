@@ -61,7 +61,7 @@ func verifymazestructs(maze Mazedata) error {
 
 	for _, e := range maze.Elements {
 
-		var expectedlen int64
+		var expectedlen int32
 		if e.Type < 100 {
 			expectedlen = (2*maze.M+1)*maze.N + maze.M
 		} else {
@@ -82,14 +82,14 @@ type Mazedata struct {
 	Title       string        `json:"title"`
 	Author      string        `json:"author"`
 	Description string        `json:"description"`
-	M           int64         `json:"m"`
-	N           int64         `json:"n"`
+	M           int32         `json:"m"`
+	N           int32         `json:"n"`
 	Elements    []Mazeelement `json:"elements"`
 }
 
 // maze element storage
 type Mazeelement struct {
-	Type        int64     `json:"type"`
+	Type        int32     `json:"type"`
 	Description string    `json:"description"`
-	Data        []float64 `json:"data"`
+	Data        []float32 `json:"data"`
 }

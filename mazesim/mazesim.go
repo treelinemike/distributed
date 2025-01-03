@@ -20,6 +20,21 @@ func main() {
 
 	p := new(mazeviz.Params)
 	p.Setparams(int(readmaze.M), int(readmaze.N))
+
+	for _, e := range readmaze.Elements {
+		if e.Type == 0 {
+			for _, v := range e.Data {
+				p.Walls = append(p.Walls, int32(v))
+			}
+		}
+		if e.Type == 100 {
+			for _, v := range e.Data {
+				p.Cellvals = append(p.Walls, int32(v))
+			}
+		}
+
+	}
+
 	//p.Setparams(3, 3)
 
 	game, err := mazeviz.NewGame(*p)
@@ -42,7 +57,7 @@ func main() {
 	newelement := new(Mazeelement)
 	newelement.Type = 100
 	newelement.Description = ""
-	newelement.Data = []float64{0, 1, 0, 0, 1, 0, 0, 1, 0}
+	newelement.Data = []float32{0, 1, 0, 0, 1, 0, 0, 1, 0}
 	writemaze.Elements = append(writemaze.Elements, *newelement)
 
 	// write the maze configuration to json
