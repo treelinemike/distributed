@@ -15,11 +15,9 @@ func main() {
 	// command line arguments
 	ipflag := flag.String("i", "", "name of input json file")
 	flag.Parse()
-
-	// catch default case(s) with no args
-	// or when exectued wtih go run .
 	if *ipflag == "" {
-		log.Fatal("Must specify maze json file")
+		*ipflag = "defaultmaze.json"
+		log.Println("No input maze specified, usinsg default")
 	}
 
 	// create a new game
@@ -29,7 +27,7 @@ func main() {
 	}
 
 	// load maze from json or specify default size
-	ww, wh, err = game.Loadmaze(*ipflag)
+	ww, wh, err := game.Loadmaze(*ipflag)
 	if err != nil {
 		log.Fatalf("error loading maze: %v\n", err)
 	}
@@ -43,10 +41,4 @@ func main() {
 		log.Fatalf("error running game: %v\n", err)
 	}
 
-	// save maze in json file
-	// when game window is closed
-	err = game.Savemaze(*opflag)
-	if err != nil {
-		log.Fatalf("error saving maze: %v\n", err)
-	}
 }
