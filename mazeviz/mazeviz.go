@@ -1,7 +1,7 @@
 package mazeviz
 
 import (
-	"engg415/mazeviz/mazeio"
+	"engg415/mazeio"
 	"fmt"
 	"math"
 
