@@ -6,6 +6,11 @@
 *~
 *.sw?
 
+# configuration files (unless manually added)
+*.json
+*.yaml
+*.yml
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

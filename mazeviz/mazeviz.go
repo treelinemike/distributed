@@ -3,7 +3,6 @@ package mazeviz
 import (
 	"engg415/mazeviz/mazeio"
 	"fmt"
-	"log"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -38,7 +37,6 @@ func (g *Game) Loadmaze(jsonfilename string) (ww int, wh int, err error) {
 	if err != nil {
 		return
 	}
-	log.Printf("Read: %v\n", readmaze)
 
 	// set parameters
 	p := new(Mazeparams)
@@ -151,15 +149,23 @@ func (g *Game) Savemaze(jsonfilename string) error {
 	return nil
 }
 
-func (g *Game) Newmaze(m, n int) error {
+func (g *Game) Newmaze(m, n int) (ww int, wh int, err error) {
+
+	// default values
+	ww = 0
+	wh = 0
+	err = nil
+
 	p := new(Mazeparams)
 	p.Setparams(m, n)
 	mz, err := NewMaze(*p)
 	if err != nil {
-		log.Fatal("could not initialize new maze")
+		return
 	}
+	ww = p.WW
+	wh = p.WH
 	g.maze = mz
-	return nil
+	return
 }
 
 func Newgame() (*Game, error) {
