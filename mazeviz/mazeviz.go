@@ -26,10 +26,6 @@ type Game struct {
 	maze  *Maze
 }
 
-func (g *Game) Params() {
-	fmt.Println("Successful call!")
-}
-
 func (g *Game) Loadmaze(jsonfilename string) (ww int, wh int, err error) {
 
 	// default values
@@ -98,7 +94,60 @@ func (g *Game) Loadmaze(jsonfilename string) (ww int, wh int, err error) {
 }
 
 func (g *Game) Savemaze(jsonfilename string) error {
-	fmt.Println("Saved")
+	// generate a maze configuration
+	writemaze := new(mazeio.Mazedata)
+	writemaze.Title = "test output"
+	writemaze.Author = "kokko"
+	writemaze.Description = ""
+	writemaze.M = int32(g.maze.p.M)
+	writemaze.N = int32(g.maze.p.N)
+	newelement := new(mazeio.Mazeelement)
+
+	// wall types
+	newelement.Type = 0
+	newelement.Description = ""
+	newelement.Data = []float32{}
+	for _, w := range g.maze.walls {
+		var wt float32
+		switch w.Type {
+		case W_none:
+			wt = 0
+		case W_latent:
+			wt = 1
+		case W_observed:
+			wt = 2
+		case W_phantom:
+			wt = 3
+		}
+		newelement.Data = append(newelement.Data, wt)
+	}
+	writemaze.Elements = append(writemaze.Elements, *newelement)
+
+	// cell types
+	newelement.Type = 100
+	newelement.Description = ""
+	newelement.Data = []float32{}
+	for _, c := range g.maze.cells {
+		var ct float32
+		switch c.Type {
+		case C_none:
+			ct = 0
+		case C_goal:
+			ct = 1
+		case C_start:
+			ct = 2
+		}
+		newelement.Data = append(newelement.Data, ct)
+	}
+	writemaze.Elements = append(writemaze.Elements, *newelement)
+
+	// TODO: WRITE OUT CELL VALUES
+
+	// write the maze configuration to json
+	err := mazeio.Writejsonmaze(jsonfilename, *writemaze)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

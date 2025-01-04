@@ -24,6 +24,7 @@ type Interval struct {
 }
 
 type Maze struct {
+	p     Mazeparams
 	cells []Cell
 	walls []Wall
 }
@@ -63,6 +64,7 @@ func NewMaze(p Mazeparams) (*Maze, error) {
 	m := new(Maze)
 
 	celltextinit(math.Round(float64(p.CSZ) / 3))
+	m.p = p
 
 	for col := 0; col <= p.N; col++ {
 

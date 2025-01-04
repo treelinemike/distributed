@@ -26,11 +26,14 @@ func main() {
 	ebiten.SetWindowTitle("Maze Generator")
 
 	// run game
-	if err := ebiten.RunGame(game); err != nil {
+	if err = ebiten.RunGame(game); err != nil {
 		log.Fatalf("error running game: %v\n", err)
 	}
 
-	// save json file
-	game.Savemaze("mazeout.json")
+	// save maze in json file
+	err = game.Savemaze("mazeout.json")
+	if err != nil {
+		log.Fatalf("error saving maze: %v\n", err)
+	}
 
 }
