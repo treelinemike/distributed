@@ -1,12 +1,21 @@
 package mazeviz
 
 import (
-	"fmt"
 	"image/color"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
+
+type Mazeparams struct {
+	M   int
+	N   int
+	CSZ int
+	CSP int
+	CSK int
+	WW  int
+	WH  int
+}
 
 type Interval struct {
 	Start float32
@@ -16,7 +25,7 @@ type Interval struct {
 
 type Maze struct {
 	cells []Cell
-	lines []Line
+	walls []Wall
 }
 
 func (m *Maze) Draw(screen *ebiten.Image) {
@@ -26,70 +35,72 @@ func (m *Maze) Draw(screen *ebiten.Image) {
 		c.Draw(screen)
 	}
 
-	// draw non-existant lines next
-	for _, l := range m.lines {
-		if l.Type == W_none {
-			l.Draw(screen)
+	// draw non-existant walls next
+	for _, w := range m.walls {
+		if w.Type == W_none {
+			w.Draw(screen)
 		}
 	}
 
-	// draw latent lines
-	for _, l := range m.lines {
-		if l.Type == W_latent {
-			l.Draw(screen)
+	// draw latent walls
+	for _, w := range m.walls {
+		if w.Type == W_latent {
+			w.Draw(screen)
 		}
 	}
 
-	// finally draw true lines
-	for _, l := range m.lines {
-		if l.Type == W_observed {
-			l.Draw(screen)
+	// finally draw true walls that have been observed
+	for _, w := range m.walls {
+		if w.Type == W_observed {
+			w.Draw(screen)
 		}
 	}
+
+	// TODO: show phantom walls?
 }
 
-func NewMaze(p Params) (*Maze, error) {
+func NewMaze(p Mazeparams) (*Maze, error) {
 	m := new(Maze)
 
 	celltextinit(math.Round(float64(p.CSZ) / 3))
 
 	for col := 0; col <= p.N; col++ {
 
-		// add column of vertical lines
+		// add column of vertical walls
 		y0 := float32(p.CSP)/2 + float32(p.M*p.CSK)
 		for y := y0; y > float32(p.CSP); y -= float32(p.CSK) {
-			l := new(Line)
-			l.X0 = float32(p.CSP)/2 + float32(col*p.CSK)
-			l.Y0 = float32(y)
-			l.X1 = l.X0
-			l.Y1 = l.Y0 - float32(p.CSK)
-			l.Xmin = l.X0 - float32(p.CSP)/2
-			l.Xmax = l.X0 + float32(p.CSP)/2
-			l.Ymin = l.Y1 + float32(p.CSP)/2
-			l.Ymax = l.Y0 - float32(p.CSP)/2
-			l.Width = float32(p.CSP)
-			l.Type = W_none
-			m.lines = append(m.lines, *l)
+			w := new(Wall)
+			w.X0 = float32(p.CSP)/2 + float32(col*p.CSK)
+			w.Y0 = float32(y)
+			w.X1 = w.X0
+			w.Y1 = w.Y0 - float32(p.CSK)
+			w.Xmin = w.X0 - float32(p.CSP)/2
+			w.Xmax = w.X0 + float32(p.CSP)/2
+			w.Ymin = w.Y1 + float32(p.CSP)/2
+			w.Ymax = w.Y0 - float32(p.CSP)/2
+			w.Width = float32(p.CSP)
+			w.Type = W_none
+			m.walls = append(m.walls, *w)
 		}
 
 		// add column of horizontal lines and cells
 		if col < p.N {
 			for row := 0; row <= p.M; row++ {
-				// horizontal line
-				l := new(Line)
-				l.X0 = float32(p.CSP)/2 + float32(col*p.CSK)
-				l.Y0 = float32(p.CSP)/2 + float32(p.M-row)*float32(p.CSK)
-				l.X1 = l.X0 + float32(p.CSK)
-				l.Y1 = l.Y0
-				l.Xmin = l.X0 + float32(p.CSP)/2
-				l.Xmax = l.X1 - float32(p.CSP)/2
-				l.Ymin = l.Y0 - float32(p.CSP)/2
-				l.Ymax = l.Y0 + float32(p.CSP)/2
-				l.Width = float32(p.CSP)
-				l.Type = W_none
-				m.lines = append(m.lines, *l)
+				// horizontal walls
+				w := new(Wall)
+				w.X0 = float32(p.CSP)/2 + float32(col*p.CSK)
+				w.Y0 = float32(p.CSP)/2 + float32(p.M-row)*float32(p.CSK)
+				w.X1 = w.X0 + float32(p.CSK)
+				w.Y1 = w.Y0
+				w.Xmin = w.X0 + float32(p.CSP)/2
+				w.Xmax = w.X1 - float32(p.CSP)/2
+				w.Ymin = w.Y0 - float32(p.CSP)/2
+				w.Ymax = w.Y0 + float32(p.CSP)/2
+				w.Width = float32(p.CSP)
+				w.Type = W_none
+				m.walls = append(m.walls, *w)
 
-				// cell on top of the line
+				// cell on top of the wall
 				if row < p.M {
 					c := new(Cell)
 					c.Size = p.CSZ
@@ -105,29 +116,7 @@ func NewMaze(p Params) (*Maze, error) {
 					c.Type = C_none
 					m.cells = append(m.cells, *c)
 				}
-
 			}
-		}
-	}
-
-	// add lines from JSON
-	if len(p.Walltypes) == len(m.lines) {
-		for i, w := range p.Walltypes {
-			m.lines[i].Type = w
-		}
-	}
-
-	// add cell types from JSON
-	if len(p.Cellvals) == len(m.cells) {
-		for i, cv := range p.Cellvals {
-			m.cells[i].Text = fmt.Sprintf("%d", int(cv))
-		}
-	}
-
-	// add cell values from JSON
-	if len(p.Celltypes) == len(m.cells) {
-		for i, ct := range p.Celltypes {
-			m.cells[i].Type = ct
 		}
 	}
 

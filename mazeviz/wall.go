@@ -17,7 +17,7 @@ const (
 	W_phantom                  // not a true wall, but erroneously observed as a wall
 )
 
-type Line struct {
+type Wall struct {
 	X0, Y0, X1, Y1         float32 // line endpoints
 	Xmin, Xmax, Ymin, Ymax float32
 	Width                  float32
@@ -32,7 +32,7 @@ var (
 	whiteSubImage = whiteImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image)
 )
 
-func (l *Line) Draw(screen *ebiten.Image) {
+func (l *Wall) Draw(screen *ebiten.Image) {
 
 	whiteImage.Fill(color.White)
 

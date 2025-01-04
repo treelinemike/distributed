@@ -1,4 +1,4 @@
-package main
+package mazeio
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 )
 
 // write maze struct to json
-func writejsonmaze(filename string, writemaze Mazedata) error {
+func Writejsonmaze(filename string, writemaze Mazedata) error {
 
 	err := verifymazestructs(writemaze)
 	if err != nil {
@@ -36,7 +36,7 @@ func writejsonmaze(filename string, writemaze Mazedata) error {
 }
 
 // read maze struct from json
-func readjsonmaze(filename string) (Mazedata, error) {
+func Readjsonmaze(filename string) (Mazedata, error) {
 	fid, err := os.Open(filename)
 	if err != nil {
 		return Mazedata{}, err
