@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 	"sync"
@@ -11,22 +12,25 @@ type nvstate struct {
 	Term     int      `json:"term"`
 	LeaderID string   `json:"leaderID"`
 	Log      []string `json:"log"`
-	Lock     sync.RWMutex
 }
 
+// globals for non-volatile state
 var jsonfilename string
 var st nvstate
+var stlock sync.RWMutex // Go doesn't like including lock in state struct due to json marshalling
 
+// setter function for term
 func setterm(p int) {
-	st.Lock.Lock()
-	defer st.Lock.Unlock()
+	stlock.Lock()
+	defer stlock.Unlock()
 	st.Term = p
 	writenvstate()
 }
 
+// setter function for leaderID
 func setleaderid(p string) {
-	st.Lock.Lock()
-	defer st.Lock.Unlock()
+	stlock.Lock()
+	defer stlock.Unlock()
 	st.LeaderID = p
 	writenvstate()
 }
@@ -41,23 +45,33 @@ func readnvstate() error {
 
 		// make sure this path isn't a directory
 		if filestat.IsDir() {
-			log.Fatal("Error: ", jsonfilename, " is a directory!")
+			return errors.New("Error: " + jsonfilename + " is a directory!")
 		}
 
-		// load json file into nvstate
+		// load json file
 		log.Println("File ", jsonfilename, " exists, loading nvstate from it...")
-		infile, _ := os.OpenFile(jsonfilename, os.O_RDONLY, os.ModePerm)
+		infile, err := os.OpenFile(jsonfilename, os.O_RDONLY, os.ModePerm)
+		if err != nil {
+			return err
+		}
 		defer infile.Close()
+
+		// decode json file
 		decoder := json.NewDecoder(infile)
-		decoder.Decode(&st)
+		err = decoder.Decode(&st)
+		if err != nil {
+			return err
+		}
 
 	} else {
 
 		// JSON FILE DOES NOT EXIST
-		log.Println("File ", jsonfilename, " does not exist, so set nvstate to default initial state...")
-		st.Term = 12
-		st.LeaderID = "Server1"
-		st.Log = append(st.Log, "first command", "second command")
+		log.Println("File ", jsonfilename, " does not exist, so setting nvstate elements to default initial values...")
+
+		// we don't really need to do anything here since the zero values are fine
+		//st.Term = 0
+		//st.LeaderID = ""
+		//st.Log = append(st.Log, "first command", "second command")
 	}
 
 	// done

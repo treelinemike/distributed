@@ -44,11 +44,6 @@ func (t *rafttimer) settimeout(to common.Timeout) error {
 	return nil
 }
 
-// non-volitile storage --- how are we going to implement this?
-var currentTerm int = 0 // can't do short declaration := at package level
-var votedFor string = ""
-var raftlog []string = make([]string, 0)
-
 // TODO: struct members don't need to be exported if we're keeping in the server.go main package
 type AEParams struct {
 	term         int
@@ -123,9 +118,10 @@ func main() {
 		log.Fatal("Error initializing initial state")
 	}
 
-	// test setting term
-	setterm(14)
-	setleaderid("someserver")
+	// show what we loaded from json
+	log.Printf("Loaded leaderID: '%v'\n", st.LeaderID)
+	log.Printf("Loaded term: %v\n", st.Term)
+	log.Printf("Loaded log: %v\n", st.Log)
 
 	// serve up our RPC API
 	log.Println("Registering RPCs for access on port", servers[selfkey].Port)
