@@ -26,12 +26,12 @@ func main() {
 	}
 
 	// seed the RNG so we can reproduce results
-	//source := rand.New(rand.NewPCG(102, 9945))
-	//rng := rand.New(source)
+	source := rand.New(rand.NewPCG(102, 3145))
+	rng := rand.New(source)
 
 	// select random strings from the slice to store in the raft cluster
 	for range 100 {
-		idx := rand.IntN(len(strings))
+		idx := rng.IntN(len(strings))
 		fmt.Printf("%d (of %d): %s\n", idx, len(strings), strings[idx])
 		strings = slices.Delete(strings, idx, idx+1)
 	}
