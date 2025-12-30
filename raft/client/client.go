@@ -12,7 +12,7 @@ import (
 func main() {
 
 	// open the text file
-	file, err := os.OpenFile("google-10000-english-usa-no-swears.txt", os.O_RDONLY, os.ModePerm)
+	file, err := os.OpenFile("wordlist.txt", os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		log.Fatalf("Error reading file: %v", err)
 	}
@@ -26,16 +26,13 @@ func main() {
 	}
 
 	// seed the RNG so we can reproduce results
-	source := rand.New(rand.NewPCG(102, 9945))
-	rng := rand.New(source)
+	//source := rand.New(rand.NewPCG(102, 9945))
+	//rng := rand.New(source)
 
 	// select random strings from the slice to store in the raft cluster
-	for range 10 {
-		idx := rng.IntN(len(strings))
+	for range 100 {
+		idx := rand.IntN(len(strings))
 		fmt.Printf("%d (of %d): %s\n", idx, len(strings), strings[idx])
 		strings = slices.Delete(strings, idx, idx+1)
 	}
-	fmt.Printf("Read %d strings from file\n", len(strings))
-	fmt.Printf("%d: %s\n", 0, strings[0])
-
 }
