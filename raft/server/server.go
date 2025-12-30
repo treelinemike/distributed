@@ -3,6 +3,7 @@ package main
 import (
 	"engg415/raft/common"
 	"fmt"
+	"io"
 	"log"
 	"math/rand/v2"
 	"net"
@@ -82,7 +83,8 @@ func main() {
 
 	var err error
 
-	// format log
+	// format log time in microseconds
+	// will start logging to file as soon as we know which host key we have been assigned
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
 	// load cluster configuration
@@ -95,7 +97,7 @@ func main() {
 	servers := make(map[string]common.NetworkAddress)
 
 	// load config
-	log.Println("Loading Raft config file")
+	log.Println("Loading cluster configuration file")
 	var jsonfilebase string
 	var t common.Timeout
 	common.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
@@ -107,8 +109,20 @@ func main() {
 	if !ok {
 		log.Fatal("Key ", selfkey, " is not in cluster config file")
 	} else {
-		log.Printf("Config specifies this server as %s:%s", servers[selfkey].Address, servers[selfkey].Port)
+		log.Printf("Config specifies this server as %s:%s with host key %s", servers[selfkey].Address, servers[selfkey].Port, selfkey)
 	}
+
+	// configure logging
+	logfilename := fmt.Sprintf("log_%s.txt", selfkey)
+	log.Printf("Creating log file: %s", logfilename)
+	logfid, err := os.OpenFile(logfilename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	if err != nil {
+		log.Panicf("Could not create log file: %v\n", err)
+	}
+	defer logfid.Close()
+	mux := io.MultiWriter(os.Stdout, logfid)
+	log.SetOutput(mux)
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds) // for good measure?
 
 	// load non-volatile state if it has been previously saved
 	jsonfilename = jsonfilebase + "_" + selfkey + ".json"

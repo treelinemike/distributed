@@ -42,12 +42,15 @@ func main() {
 	for _, badword := range badstrings {
 		log.Printf("Removing occurrences of bad word: %s\n", badword)
 		for idx, thisword := range strings {
-			if thisword == badword || len(thisword) == 1 {
+			if thisword == badword {
 				log.Printf("Removing bad word: %s\n", thisword)
 				strings = slices.Delete(strings, idx, idx+1)
 			}
 		}
 	}
+
+	// sort the strings slice alphabetically
+	slices.Sort(strings)
 
 	// save the cleaned list
 	outputfile, err := os.OpenFile("wordlist.txt", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
