@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// seed the RNG so we can reproduce results
-	source := rand.New(rand.NewPCG(102, 3145))
+	source := rand.New(rand.NewPCG(199, 3135))
 	rng := rand.New(source)
 
 	// select random strings from the slice to store in the raft cluster
