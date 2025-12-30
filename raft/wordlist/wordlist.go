@@ -24,7 +24,7 @@ func main() {
 	}
 
 	// open the text file
-	file2, err := os.OpenFile("toremove.txt", os.O_RDONLY, os.ModePerm)
+	file2, err := os.OpenFile("remove.txt", os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		log.Fatalf("Error reading file: %v", err)
 	}
