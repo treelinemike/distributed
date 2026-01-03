@@ -25,16 +25,15 @@ var electiontimer common.RaftTimer
 
 // TODO: struct members don't need to be exported if we're keeping in the server.go main package
 type AEParams struct {
-	term         int
-	leaderId     int
-	prevLogIndex int
-	leaderCommit int
+	Term         int
+	LeaderId     string
+	PrevLogIndex int
+	LeaderCommit int
 }
 
 func (r *RaftAPI) AppendEntries(p AEParams, resp *int) error {
+	log.Printf("AppendEntriesRPC received in term %d from leader %v\n", p.Term, p.LeaderId)
 	electiontimer.Stop()
-	fmt.Printf("AppendEntriesRPC: term %d\n", p.term)
-
 	electiontimer.Reset()
 	return nil
 }
@@ -52,7 +51,27 @@ type RVResp struct {
 }
 
 func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
-	fmt.Printf("RequestVoteRPC: term %d vote requested for server %s\n", p.Term, p.CandidateId)
+	log.Printf("Server %s requested a vote for term %v\n", p.CandidateId, p.Term)
+
+	if currentTerm < p.Term {
+		currentTerm = p.Term
+		state = common.Follower
+		votedForThisTerm = p.CandidateId
+		resp.Term = currentTerm
+		resp.VoteGranted = true
+		log.Printf("Vote granted\n")
+	} else if currentTerm == p.Term {
+		resp.Term = currentTerm
+		if votedForThisTerm == "" {
+			votedForThisTerm = p.CandidateId
+			resp.VoteGranted = true
+			log.Printf("Vote granted\n")
+		} else {
+			resp.VoteGranted = false
+			log.Printf("Vote denied\n")
+		}
+	}
+	// todo: other important cases here?
 
 	return nil
 }
@@ -79,8 +98,11 @@ func main() {
 	var jsonfilebase string
 	var t common.Timeout
 	common.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
+
+	// create an election timer
 	log.Printf("Config specifies election timeout range [%d, %d]\n", t.Min_ms, t.Max_ms)
 	electiontimer.SetTimeout(t)
+	electiontimer.Timer = time.NewTimer(100 * time.Second) // TODO: add this into an init function?
 
 	// make sure provided selfkey is in map from config file
 	_, ok := servers[selfkey]
@@ -172,39 +194,141 @@ func main() {
 	log.Println("Starting in follower state")
 	state = common.Follower
 
-	if selfkey != "1" {
-		for {
-
-		}
-	}
-
-	// start the election timeout timer
-	electiontimer.Timer = time.NewTimer(100 * time.Second)
-
-	i := 0
 	for {
-		log.Printf("Starting election timer\n")
-		electiontimer.Reset()
-		<-electiontimer.Timer.C
-		log.Printf("%d: calling election!\n", i)
-		i++
 
-		// prepare parameters for requesting vote
-		var rvp RVParams
-		rvp.CandidateId = selfkey
-		rvp.LastLogIndex = 0 // TODO: add correct value
-		rvp.Term = 0         // TODO: add correct value
+		// DEBUG ONLY
+		if currentTerm > 4 {
+			log.Fatalf("Too many terms!")
+		}
 
-		// request votes from all other servers
-		for svr := range servers {
-			if svr != selfkey {
-				log.Printf("We should ask server %s: %s:%s ", svr, servers[svr].Address, servers[svr].Port)
-				var rvr RVResp
-				err := servers[svr].Handle.Call("RaftAPI.RequestVote", rvp, &rvr)
-				if err != nil {
-					log.Fatalf("Could not request vote from server %s: %v\n", svr, err)
+		switch state {
+		case common.Follower:
+			electiontimer.Reset()
+			<-electiontimer.Timer.C
+			state = common.Candidate
+
+		case common.Candidate:
+
+			// increment term
+			currentTerm += 1
+			votedForThisTerm = selfkey
+			numVotesReceived := 1 // vote for self
+			numBallotsReceived := 1
+
+			log.Printf("Calling election for term %v\n", currentTerm)
+
+			// create a channel to receive votes
+			votechan := make(chan bool)
+
+			// request votes from all other servers
+			// TODO: excute these as goroutines
+			// TODO: we're not retrying any servers that don't respond here (raftscope does show retries every ~50ms)
+			for svr := range servers {
+				if svr != selfkey {
+
+					// launch a goroutine to request vote on a channel
+					go func(svr string, votechannel chan bool) {
+						log.Printf("Requesting vote from server %s: %s:%s ", svr, servers[svr].Address, servers[svr].Port)
+
+						// prepare parameters for requesting vote
+						var rvp RVParams
+						rvp.CandidateId = selfkey
+						rvp.LastLogIndex = 0 // TODO: add correct value
+						rvp.Term = currentTerm
+
+						var rvr RVResp
+						err := servers[svr].Handle.Call("RaftAPI.RequestVote", rvp, &rvr)
+						if err != nil {
+							log.Printf("Could not request vote from server %s: %v\n", svr, err)
+						}
+						votechannel <- rvr.VoteGranted
+					}(svr, votechan)
+
 				}
 			}
+
+			// run election timer
+			electiontimer.Reset()
+
+			for done := false; !done; {
+				select {
+				case vote := <-votechan:
+
+					// log that we got a ballot
+					numBallotsReceived += 1
+
+					// determne whether we got the vote
+					if vote {
+						numVotesReceived += 1
+						log.Printf("Ballot received: vote granted")
+					} else {
+						log.Printf("Ballot received: vote denied")
+					}
+
+					// exit if we received all of the ballots
+					// TODO: this is a bit of a hack to avoid goroutines writing to a closed channel
+					// if we don't get all the ballots back we will therefore wait until the election timer expires
+					// to declare victory even if we receive a majority of the votes much earlier
+					if numBallotsReceived == len(servers) {
+						done = true
+						if float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
+							log.Println("We won the election")
+							state = common.Leader
+						} else {
+							log.Println("We did not win the election")
+							state = common.Follower
+						}
+					}
+
+				// timeout case
+				case <-electiontimer.Timer.C:
+					log.Println("Election timed out waiting for votes")
+					done = true
+
+					// check to see if we won...
+					// TODO: remove this once we fix the logic in the election piece with
+					if float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
+						log.Printf("We won the election but only received %v ballots\n", numBallotsReceived)
+						state = common.Leader
+					}
+
+				}
+			}
+
+			// report election statistics for the log
+			log.Printf("Received %v votes in %v ballots\n", numVotesReceived, numBallotsReceived)
+
+			// don't change or re-initiate our canddidate state
+			// because it may be changed by incoming RPCs (e.g. if we have the wrong term)
+
+			// close votechan
+			close(votechan)
+
+		case common.Leader:
+
+			// sent heartbeat (AppendEntries RPCs with empty entries slice) to all followers
+			/**/
+			for svr := range servers {
+				if svr != selfkey {
+					log.Printf("Sending heartbeat to server %s: %s:%s ", svr, servers[svr].Address, servers[svr].Port)
+					var retval int
+
+					// prepare parameters for requesting vote
+					var rap AEParams
+					rap.Term = currentTerm
+					rap.LeaderId = selfkey
+					rap.LeaderCommit = 0 // TODO: fix this
+					rap.PrevLogIndex = 0 // TODO: fix this
+
+					err := servers[svr].Handle.Call("RaftAPI.AppendEntries", rap, &retval)
+					if err != nil {
+						log.Printf("Error calling append entries on server %s: %v\n", svr, err)
+					}
+				}
+			}
+			/**/
+			time.Sleep(4 * time.Second) // TODO: REMOVE... FOR DEBUGGING ONLY!
+
 		}
 
 	}
