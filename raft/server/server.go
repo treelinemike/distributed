@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// globals that need to be accessed by RPCs
+// globals that need to be accessed by functions or RPCs
 var currentTerm int = 0
 var votedForThisTerm string = ""
 var commitIdx int = 0
@@ -258,7 +258,7 @@ func main() {
 					log.Printf("Sending heartbeat to server %s: %s:%s ", svr, servers[svr].Address, servers[svr].Port)
 					var retval int
 
-					// prepare parameters for requesting vote
+					// prepare parameters for append entries
 					var rap AEParams
 					rap.Term = currentTerm
 					rap.LeaderId = selfkey
@@ -268,6 +268,26 @@ func main() {
 					err := servers[svr].Handle.Call("RaftAPI.AppendEntries", rap, &retval)
 					if err != nil {
 						log.Printf("Error calling append entries on server %s: %v\n", svr, err)
+					}
+
+					// if server has been shutdown, try recommencting once per RPC attempt
+					// TODO: move this to an ASYNCHRONOUS function, will require making 'servers' a global
+					if err == rpc.ErrShutdown {
+						log.Printf("Attempting to reconnect to host %s:%s\n", servers[svr].Address, servers[svr].Port)
+						host, err := rpc.DialHTTP("tcp", servers[svr].Address+":"+servers[svr].Port)
+						if err == nil {
+							log.Printf("Reconnected to host %s:%s\n", servers[svr].Address, servers[svr].Port)
+
+							// store handle to server in struct in map
+							// Go doesn't make this easy
+							tempsvrdata := servers[svr]
+							tempsvrdata.Handle = host
+							servers[svr] = tempsvrdata
+							break
+						} else {
+							log.Printf("Reconnect attempt failed\n")
+						}
+
 					}
 				}
 			}
