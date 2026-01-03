@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand/v2"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -17,33 +16,12 @@ import (
 type RaftAPI int
 
 // globals that need to be accessed by RPCs
+var currentTerm int = 0
+var votedForThisTerm string = ""
 var commitIdx int = 0
 var lastApplied int = 0
-
-type rafttimer struct {
-	timer   *time.Timer
-	timeout common.Timeout
-}
-
-var electiontimer rafttimer
-
-func (t *rafttimer) reset() error {
-	randtval := time.Duration(rand.IntN(t.timeout.Max_ms-t.timeout.Min_ms)+t.timeout.Min_ms) * time.Millisecond
-	t.timer.Reset(randtval)
-	log.Printf("Setting election timeout at %v", randtval)
-	return nil
-}
-
-func (t *rafttimer) stop() error {
-	t.timer.Stop()
-	log.Printf("Stopping election timer")
-	return nil
-}
-
-func (t *rafttimer) settimeout(to common.Timeout) error {
-	t.timeout = to
-	return nil
-}
+var state common.RaftState = common.Follower
+var electiontimer common.RaftTimer
 
 // TODO: struct members don't need to be exported if we're keeping in the server.go main package
 type AEParams struct {
@@ -54,27 +32,27 @@ type AEParams struct {
 }
 
 func (r *RaftAPI) AppendEntries(p AEParams, resp *int) error {
-	electiontimer.stop()
+	electiontimer.Stop()
 	fmt.Printf("AppendEntriesRPC: term %d\n", p.term)
 
-	electiontimer.reset()
+	electiontimer.Reset()
 	return nil
 }
 
 type RVParams struct {
-	term         int
-	candidateId  string
-	lastLogIndex int
-	lastLogTerm  int
+	Term         int
+	CandidateId  string
+	LastLogIndex int
+	LastLogTerm  int
 }
 
 type RVResp struct {
-	term        int
-	voteGranted bool
+	Term        int
+	VoteGranted bool
 }
 
 func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
-	fmt.Printf("RequestVoteRPC: term %d\n", p.term)
+	fmt.Printf("RequestVoteRPC: term %d vote requested for server %s\n", p.Term, p.CandidateId)
 
 	return nil
 }
@@ -102,7 +80,7 @@ func main() {
 	var t common.Timeout
 	common.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
 	log.Printf("Config specifies election timeout range [%d, %d]\n", t.Min_ms, t.Max_ms)
-	electiontimer.settimeout(t)
+	electiontimer.SetTimeout(t)
 
 	// make sure provided selfkey is in map from config file
 	_, ok := servers[selfkey]
@@ -154,28 +132,28 @@ func main() {
 	// TODO: better handle the case when a server is initially crashed?
 	log.Println("Trying to connect to all other servers now...")
 	var wg sync.WaitGroup
-	for svr := range servers {
-		if svr != selfkey {
+	for svr_key, svr_data := range servers { // ranging over a map returns (key, value) pairs
+		if svr_key != selfkey {
 			wg.Add(1)
-			go func(svr string) {
+			go func(svr_key string) { // note: we can still access servers due to scoping of goroutine
 				defer wg.Done()
 				// try connect to host repeatedly (even if OS times out the attempt very quickly)
 				// we will use our own timeout on the connection attempt
 				for {
 					//log.Printf("Attempting connection to host %s:%s\n", servers[svr].Address, servers[svr].Port)
-					host, err := rpc.DialHTTP("tcp", servers[svr].Address+":"+servers[svr].Port)
+					host, err := rpc.DialHTTP("tcp", servers[svr_key].Address+":"+servers[svr_key].Port)
 					if err == nil {
-						log.Printf("Connected to host %s:%s\n", servers[svr].Address, servers[svr].Port)
+						log.Printf("Connected to host %s:%s\n", servers[svr_key].Address, servers[svr_key].Port)
 
 						// store handle to server in struct in map
 						// Go doesn't make this easy
-						tempsvrdata := servers[svr]
+						tempsvrdata := svr_data
 						tempsvrdata.Handle = host
-						servers[svr] = tempsvrdata
+						servers[svr_key] = tempsvrdata
 						break
 					}
 				}
-			}(svr)
+			}(svr_key)
 		}
 	}
 	c := make(chan struct{})
@@ -190,30 +168,41 @@ func main() {
 		log.Fatal("Timeout connecting to servers")
 	}
 
+	// by default start in follower state
+	log.Println("Starting in follower state")
+	state = common.Follower
+
+	if selfkey != "1" {
+		for {
+
+		}
+	}
+
 	// start the election timeout timer
-	electiontimer.timer = time.NewTimer(100 * time.Second)
+	electiontimer.Timer = time.NewTimer(100 * time.Second)
 
 	i := 0
 	for {
-		electiontimer.reset()
-		<-electiontimer.timer.C
+		log.Printf("Starting election timer\n")
+		electiontimer.Reset()
+		<-electiontimer.Timer.C
 		log.Printf("%d: calling election!\n", i)
 		i++
 
 		// prepare parameters for requesting vote
 		var rvp RVParams
-		rvp.candidateId = selfkey
-		rvp.lastLogIndex = 0 // TODO: add correct value
-		rvp.term = 0         // TODO: add correct value
+		rvp.CandidateId = selfkey
+		rvp.LastLogIndex = 0 // TODO: add correct value
+		rvp.Term = 0         // TODO: add correct value
 
 		// request votes from all other servers
 		for svr := range servers {
 			if svr != selfkey {
 				log.Printf("We should ask server %s: %s:%s ", svr, servers[svr].Address, servers[svr].Port)
 				var rvr RVResp
-				err := servers[svr].Handle.Call("RequestVote", rvp, &rvr)
+				err := servers[svr].Handle.Call("RaftAPI.RequestVote", rvp, &rvr)
 				if err != nil {
-					log.Fatalf("Could not request vote from server %s\n", svr)
+					log.Fatalf("Could not request vote from server %s: %v\n", svr, err)
 				}
 			}
 		}

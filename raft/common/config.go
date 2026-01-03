@@ -15,10 +15,7 @@ type (
 		Port    string `mapstructure:"Port"`
 		Handle  *rpc.Client
 	}
-	Timeout struct {
-		Min_ms int `mapstructure:"Min_ms"`
-		Max_ms int `mapstructure:"Max_ms"`
-	}
+
 	RaftConfig struct {
 		Servers             map[string]NetworkAddress `mapstructure:"Servers"`
 		Timeout             Timeout                   `mapstructure:"Timeout"`
