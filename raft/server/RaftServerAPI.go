@@ -18,6 +18,9 @@ type AEParams struct {
 func (r *RaftAPI) AppendEntries(p AEParams, resp *int) error {
 	log.Printf("AppendEntriesRPC received in term %d from leader %v\n", p.Term, p.LeaderID)
 
+	// update LeaderID so we can redirect any client requests
+	currentTermLeader = p.LeaderID
+
 	// stop trying to win an election (and importantly incrementing the term to do so)
 	if p.Term > currentTerm {
 		log.Printf("Learned from server %v that we're actually in term %v (not %v)\n", p.LeaderID, p.Term, currentTerm)
@@ -73,5 +76,16 @@ func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 	// and it seems to help reduce number of unnecessary elections
 	electiontimer.Reset()
 
+	return nil
+}
+
+func (r *RaftAPI) ProcessClientRequest(s []string, resp *int) error {
+	// if not leader, send client back the current leader ID
+	return nil
+}
+
+func (r *RaftAPI) StopServer(param int, resp *int) error {
+	log.Println("Received STOP from client, process will end on next loop")
+	stopServer = true
 	return nil
 }

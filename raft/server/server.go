@@ -15,6 +15,7 @@ import (
 
 // globals that need to be accessed by functions or RPCs
 var currentTerm int = 0
+var currentTermLeader string = ""
 var votedForThisTerm string = ""
 var commitIdx int = 0
 var lastApplied int = 0
@@ -22,6 +23,7 @@ var state common.RaftState = common.Follower
 var electiontimer common.RaftTimer
 var servers map[string]common.NetworkAddress
 var isactive map[string]bool
+var stopServer bool = false
 
 // repeatedly attempt to reconnect to host
 func reconnectToHost(svr string) {
@@ -171,7 +173,7 @@ func main() {
 	log.Println("Starting in follower state")
 	state = common.Follower
 
-	for {
+	for !stopServer {
 
 		// DEBUG ONLY
 		if currentTerm > 10 {
