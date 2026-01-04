@@ -20,6 +20,31 @@ var commitIdx int = 0
 var lastApplied int = 0
 var state common.RaftState = common.Follower
 var electiontimer common.RaftTimer
+var servers map[string]common.NetworkAddress
+var isactive map[string]bool
+
+// repeatedly attempt to reconnect to host
+func reconnectToHost(svr string) {
+	log.Printf("Attempting to reconnect to server %v (%s:%s)\n", svr, servers[svr].Address, servers[svr].Port)
+	for {
+		host, err := rpc.DialHTTP("tcp", servers[svr].Address+":"+servers[svr].Port)
+		if err == nil {
+			log.Printf("Reconnected to server %v (%s:%s)\n", svr, servers[svr].Address, servers[svr].Port)
+
+			// store handle to server in struct in map
+			// Go doesn't make this easy
+			tempsvrdata := servers[svr]
+			tempsvrdata.Handle = host
+			servers[svr] = tempsvrdata
+
+			// update to indicate that server is back online
+			isactive[svr] = true
+
+			// break out of loop
+			break
+		}
+	}
+}
 
 func main() {
 
@@ -36,7 +61,8 @@ func main() {
 	}
 	filename := os.Args[1]
 	selfkey := os.Args[2]
-	servers := make(map[string]common.NetworkAddress)
+	servers = make(map[string]common.NetworkAddress)
+	isactive = make(map[string]bool)
 
 	// load config
 	log.Println("Loading cluster configuration file")
@@ -96,6 +122,7 @@ func main() {
 
 	// connect to each server in the cluster
 	// use a bunch of goroutines with timeouts
+	// ok to block with a wait group here beause we do actually need to connect to all of our servers
 	// TODO: better handle the case when a server is initially crashed?
 	log.Println("Trying to connect to all other servers now...")
 	var wg sync.WaitGroup
@@ -117,6 +144,11 @@ func main() {
 						tempsvrdata := svr_data
 						tempsvrdata.Handle = host
 						servers[svr_key] = tempsvrdata
+
+						// set "up" status
+						isactive[svr_key] = true
+
+						// break out of loop
 						break
 					}
 				}
@@ -142,7 +174,7 @@ func main() {
 	for {
 
 		// DEBUG ONLY
-		if currentTerm > 4 {
+		if currentTerm > 10 {
 			log.Fatalf("Too many terms!")
 		}
 
@@ -169,11 +201,11 @@ func main() {
 			// TODO: excute these as goroutines
 			// TODO: we're not retrying any servers that don't respond here (raftscope does show retries every ~50ms)
 			for svr := range servers {
-				if svr != selfkey {
+				if svr != selfkey && isactive[svr] {
 
 					// launch a goroutine to request vote on a channel
 					go func(svr string, votechannel chan bool) {
-						log.Printf("Requesting vote from server %s: %s:%s ", svr, servers[svr].Address, servers[svr].Port)
+						log.Printf("Requesting term %v vote from server %s", currentTerm, svr)
 
 						// prepare parameters for requesting vote
 						var rvp RVParams
@@ -183,10 +215,17 @@ func main() {
 
 						var rvr RVResp
 						err := servers[svr].Handle.Call("RaftAPI.RequestVote", rvp, &rvr)
-						if err != nil {
-							log.Printf("Could not request vote from server %s: %v\n", svr, err)
+						// if server has been shutdown, try recommencting once per RPC attempt
+						// TODO: move this to an ASYNCHRONOUS function, will require making 'servers' a global
+						if err == rpc.ErrShutdown {
+							isactive[svr] = false
+							go reconnectToHost(svr)
 						}
-						votechannel <- rvr.VoteGranted
+						if err != nil {
+							log.Printf("Could not request term %v vote from server %s: %v\n", currentTerm, svr, err)
+						}
+
+						votechannel <- rvr.VoteGranted // defaults to false
 					}(svr, votechan)
 
 				}
@@ -217,23 +256,23 @@ func main() {
 					if numBallotsReceived == len(servers) {
 						done = true
 						if float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
-							log.Println("We won the election")
+							log.Printf("We won the term %v election\n", currentTerm)
 							state = common.Leader
 						} else {
-							log.Println("We did not win the election")
+							log.Printf("We did not win the term %v election\n", currentTerm)
 							state = common.Follower
 						}
 					}
 
 				// timeout case
 				case <-electiontimer.Timer.C:
-					log.Println("Election timed out waiting for votes")
+					log.Printf("Term %v election timed out waiting for votes\n", currentTerm)
 					done = true
 
 					// check to see if we won...
 					// TODO: remove this once we fix the logic in the election piece with
 					if float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
-						log.Printf("We won the election but only received %v ballots\n", numBallotsReceived)
+						log.Printf("We won the term %v election but only received %v ballots\n", currentTerm, numBallotsReceived)
 						state = common.Leader
 					}
 
@@ -254,14 +293,17 @@ func main() {
 			// sent heartbeat (AppendEntries RPCs with empty entries slice) to all followers
 			/**/
 			for svr := range servers {
-				if svr != selfkey {
-					log.Printf("Sending heartbeat to server %s: %s:%s ", svr, servers[svr].Address, servers[svr].Port)
+				if svr != selfkey && !isactive[svr] {
+					log.Printf("NOT sending term %v heartbeat to sever %v which is apparently offline\n", currentTerm, svr)
+				}
+				if svr != selfkey && isactive[svr] {
+					log.Printf("Sending term %v heartbeat to server %s\n", currentTerm, svr)
 					var retval int
 
 					// prepare parameters for append entries
 					var rap AEParams
 					rap.Term = currentTerm
-					rap.LeaderId = selfkey
+					rap.LeaderID = selfkey
 					rap.LeaderCommit = 0 // TODO: fix this
 					rap.PrevLogIndex = 0 // TODO: fix this
 
@@ -273,21 +315,8 @@ func main() {
 					// if server has been shutdown, try recommencting once per RPC attempt
 					// TODO: move this to an ASYNCHRONOUS function, will require making 'servers' a global
 					if err == rpc.ErrShutdown {
-						log.Printf("Attempting to reconnect to host %s:%s\n", servers[svr].Address, servers[svr].Port)
-						host, err := rpc.DialHTTP("tcp", servers[svr].Address+":"+servers[svr].Port)
-						if err == nil {
-							log.Printf("Reconnected to host %s:%s\n", servers[svr].Address, servers[svr].Port)
-
-							// store handle to server in struct in map
-							// Go doesn't make this easy
-							tempsvrdata := servers[svr]
-							tempsvrdata.Handle = host
-							servers[svr] = tempsvrdata
-							break
-						} else {
-							log.Printf("Reconnect attempt failed\n")
-						}
-
+						isactive[svr] = false
+						go reconnectToHost(svr)
 					}
 				}
 			}
