@@ -103,3 +103,10 @@ func (r *RaftAPI) StopServer(param int, resp *int) error {
 	stopServer = true
 	return nil
 }
+
+// simple ping function to test connectivity
+// could be integrated into AppendEntries but this is simpler for testing
+func (r *RaftAPI) Ping(param int, resp *int) error {
+	*resp = 1
+	return nil
+}

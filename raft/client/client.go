@@ -170,14 +170,16 @@ func main() {
 		committed := false
 		for !committed {
 
+			time.Sleep(250 * time.Millisecond) // TODO: REMOVE THIS
+
 			// randomly select a server to receive this word
 			// making sure that we *think* the server is currently active
-
-			for svrChoice == "" {
-				svrChoiceTemp := allSvrKeys[rand.IntN(len(allSvrKeys))]
-				if isactive[svrChoiceTemp] {
-					svrChoice = svrChoiceTemp
-				}
+			if svrChoice == "" {
+				svrChoice = allSvrKeys[rand.IntN(len(allSvrKeys))]
+			}
+			if !isactive[svrChoice] {
+				svrChoice = ""
+				continue
 			}
 			log.Printf("Attempting to send to server %v\n", svrChoice)
 
@@ -228,7 +230,7 @@ func main() {
 				log.Fatalf("Error writing '%v' to output file\n", thisWord)
 			}
 
-			// wait for a second
+			// wait before attempting to commit n
 			time.Sleep(1 * time.Second)
 		}
 	}

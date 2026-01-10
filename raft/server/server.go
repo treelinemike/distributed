@@ -45,6 +45,7 @@ func reconnectToHost(svr string) {
 			// break out of loop
 			break
 		}
+
 	}
 }
 
@@ -180,6 +181,19 @@ func main() {
 			log.Fatalf("Too many terms!")
 		}
 
+		// check to make sure all servers we expect to be active are still connected
+		for svr := range servers {
+			if svr != selfkey && isactive[svr] {
+				var retval int
+				err := servers[svr].Handle.Call("RaftAPI.Ping", 1, &retval)
+				if err != nil {
+					log.Printf("Attempting to reconnect to server %v\n", svr)
+					isactive[svr] = false
+					go reconnectToHost(svr)
+				}
+			}
+		}
+
 		switch state {
 		case common.Follower:
 			electiontimer.Reset()
@@ -193,8 +207,10 @@ func main() {
 			votedForThisTerm = selfkey
 			numVotesReceived := 1 // vote for self
 			numBallotsReceived := 1
+			numBallotsSent := 1
 
 			log.Printf("Calling election for term %v\n", currentTerm)
+			electionTerm := currentTerm
 
 			// create a channel to receive votes
 			votechan := make(chan bool)
@@ -229,6 +245,7 @@ func main() {
 
 						votechannel <- rvr.VoteGranted // defaults to false
 					}(svr, votechan)
+					numBallotsSent += 1
 
 				}
 			}
@@ -255,14 +272,19 @@ func main() {
 					// TODO: this is a bit of a hack to avoid goroutines writing to a closed channel
 					// if we don't get all the ballots back we will therefore wait until the election timer expires
 					// to declare victory even if we receive a majority of the votes much earlier
-					if numBallotsReceived == len(servers) {
+					if numBallotsReceived == numBallotsSent {
 						done = true
-						if float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
+						if currentTerm == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
 							log.Printf("We won the term %v election\n", currentTerm)
 							state = common.Leader
+						} else if currentTerm != electionTerm {
+							log.Printf("Term changed during election to %v, reverting to follower\n", currentTerm)
+							state = common.Follower
+							votedForThisTerm = ""
 						} else {
 							log.Printf("We did not win the term %v election\n", currentTerm)
 							state = common.Follower
+							votedForThisTerm = ""
 						}
 					}
 
@@ -273,10 +295,16 @@ func main() {
 
 					// check to see if we won...
 					// TODO: remove this once we fix the logic in the election piece with
-					if float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
+					if currentTerm == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
 						log.Printf("We won the term %v election but only received %v ballots\n", currentTerm, numBallotsReceived)
 						state = common.Leader
+					} else if currentTerm != electionTerm {
+						log.Printf("Term changed during election to %v, reverting to follower\n", currentTerm)
+						state = common.Follower
+						votedForThisTerm = ""
 					}
+
+					// otherwise we remain a candidate and will re-run the election
 
 				}
 			}
