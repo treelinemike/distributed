@@ -79,8 +79,22 @@ func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 	return nil
 }
 
-func (r *RaftAPI) ProcessClientRequest(s []string, resp *int) error {
+func (r *RaftAPI) ProcessClientRequest(s []string, resp *common.RespToClient) error {
+
+	// in all cases, return current leader ID
+	resp.LeaderID = currentTermLeader
+
 	// if not leader, send client back the current leader ID
+	if state != common.Leader {
+		log.Printf("Redirecting a client request to leader (%v) to commit: %v\n", currentTermLeader, s)
+		resp.Committed = false
+		return nil
+	}
+
+	// if we are the leader, try to commit this to each server
+	// TODO: DO THIS HERE
+	log.Printf("Processing client request to commit: %v\n", s)
+	resp.Committed = true
 	return nil
 }
 

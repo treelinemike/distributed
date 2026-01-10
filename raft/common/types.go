@@ -8,3 +8,8 @@ const (
 	Candidate
 	Leader
 )
+
+type RespToClient struct {
+	Committed bool
+	LeaderID  string
+}

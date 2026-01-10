@@ -17,6 +17,11 @@ import (
 var servers map[string]common.NetworkAddress
 var isactive map[string]bool
 
+type WrappedResponse struct {
+	r   common.RespToClient
+	err error
+}
+
 // repeatedly attempt to reconnect to host
 func reconnectToHost(svr string) {
 	log.Printf("Attempting to reconnect to server %v (%s:%s)\n", svr, servers[svr].Address, servers[svr].Port)
@@ -81,6 +86,7 @@ func main() {
 	// TODO: better handle the case when a server is initially crashed?
 	log.Println("Trying to connect to all servers now...")
 	var wg sync.WaitGroup
+	allSvrKeys := make([]string, 0, len(servers))
 	for svr_key, svr_data := range servers { // ranging over a map returns (key, value) pairs
 
 		wg.Add(1)
@@ -109,6 +115,8 @@ func main() {
 			}
 		}(svr_key)
 
+		// also add this to a slice of server keys
+		allSvrKeys = append(allSvrKeys, svr_key)
 	}
 	c := make(chan struct{})
 	go func() {
@@ -122,7 +130,7 @@ func main() {
 		log.Fatal("Timeout connecting to servers")
 	}
 
-	// open the text file
+	// open the input text file
 	file, err := os.OpenFile("wordlist.txt", os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		log.Fatalf("Error reading file: %v", err)
@@ -140,11 +148,89 @@ func main() {
 	source := rand.New(rand.NewPCG(199, 3135))
 	rng := rand.New(source)
 
+	// open the ground truth output text file
+	fileout, err := os.OpenFile("wordlist_sent.txt", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		log.Fatalf("Error opening output file")
+	}
+	defer fileout.Close()
+	writer := bufio.NewWriter(fileout)
+	defer writer.Flush()
+
 	// select random strings from the slice to store in the raft cluster
 	for range 100 {
+
+		// randomly select our next word and remove it from the list
 		idx := rng.IntN(len(strings))
-		fmt.Printf("%d (of %d): %s\n", idx, len(strings), strings[idx])
+		thisWord := strings[idx]
+		log.Printf("Choosing word %d of %d: %s\n", idx, len(strings), thisWord)
 		strings = slices.Delete(strings, idx, idx+1)
+
+		svrChoice := ""
+		committed := false
+		for !committed {
+
+			// randomly select a server to receive this word
+			// making sure that we *think* the server is currently active
+
+			for svrChoice == "" {
+				svrChoiceTemp := allSvrKeys[rand.IntN(len(allSvrKeys))]
+				if isactive[svrChoiceTemp] {
+					svrChoice = svrChoiceTemp
+				}
+			}
+			log.Printf("Attempting to send to server %v\n", svrChoice)
+
+			// send this word to server
+			serverResp := make(chan WrappedResponse)
+			go func(c chan WrappedResponse, word string) {
+				// TODO: ACTUALLY SUBMIT HERE VIA RPC
+				var wr WrappedResponse
+				var r common.RespToClient
+				err := servers[svrChoice].Handle.Call("RaftAPI.ProcessClientRequest", []string{thisWord}, &r)
+				wr.err = err
+				wr.r = r
+				c <- wr
+			}(serverResp, thisWord)
+			var resp WrappedResponse
+			select {
+			case resp = <-serverResp:
+			case <-time.After(200 * time.Millisecond):
+				// remove this server from active list and try to reconnect
+				log.Printf("Timeout submitting word to server %v\n", svrChoice)
+				isactive[svrChoice] = false
+				go reconnectToHost(svrChoice)
+				svrChoice = ""
+				continue // re-attempt!
+			}
+
+			if resp.err != nil {
+				// remove this server from active list and try to reconnect
+				log.Printf("Error submitting word to server: %v\n", resp.err)
+				isactive[svrChoice] = false
+				go reconnectToHost(svrChoice)
+				svrChoice = ""
+				continue // re-attempt!
+			}
+
+			if !resp.r.Committed {
+				log.Printf("Server %v is not leader, redirecting to server %v\n", svrChoice, resp.r.LeaderID)
+				svrChoice = resp.r.LeaderID
+				continue // re-attempt!
+			}
+
+			// word has been committed
+			committed = true
+
+			// write this word to the ground truth output file
+			_, err := writer.WriteString(thisWord + "\n")
+			if err != nil {
+				log.Fatalf("Error writing '%v' to output file\n", thisWord)
+			}
+
+			// wait for a second
+			time.Sleep(1 * time.Second)
+		}
 	}
 
 	// stop all servers
