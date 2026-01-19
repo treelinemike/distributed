@@ -215,24 +215,53 @@ func main() {
 				continue // re-attempt!
 			}
 
-			if !resp.r.Committed {
+			if !resp.r.AppendedToLeader {
 				log.Printf("Server %v is not leader, redirecting to server %v\n", svrChoice, resp.r.LeaderID)
 				svrChoice = resp.r.LeaderID
 				continue // re-attempt!
 			}
 
-			// word has been committed
-			committed = true
+			// now wait for confirmation that this word has been committed
+			// TODO: better to do this with a timeout in case RPC hangs,
+			// but unlikely because if server is down we'll get an error (vs. hang)
+			// and there isn't much to hang on the server side
+			var commitReply bool
+			for trycount := 0; trycount < 5; trycount++ {
+				log.Printf("Checking commit status for word %v via server %v (attempt %v)\n", thisWord, svrChoice, trycount+1)
 
-			// write this word to the ground truth output file
-			_, err := writer.WriteString(thisWord + "\n")
-			if err != nil {
-				log.Fatalf("Error writing '%v' to output file\n", thisWord)
+				// wait before checking
+				// TODO: correct timing
+				//time.Sleep(200 * time.Millisecond)
+				time.Sleep(2 * time.Second)
+
+				err := servers[svrChoice].Handle.Call("RaftAPI.IsFullyCommitted", 0, &commitReply)
+				if err != nil {
+					log.Printf("Error checking commit status from server %v: %v\n", svrChoice, err)
+					return
+				}
+				if commitReply {
+					log.Printf("Word %v committed via leader (server %v)\n", thisWord, svrChoice)
+					committed = true
+					break
+				}
 			}
 
-			// wait before attempting to commit n
-			time.Sleep(1 * time.Second)
+			// write this word to the ground truth output file
+			if committed {
+				_, err := writer.WriteString(thisWord + "\n")
+				if err != nil {
+					log.Fatalf("Error writing '%v' to output file\n", thisWord)
+				}
+				writer.Flush()
+			} else {
+				log.Fatalf("Word '%v' not yet committed according to server %v\n", thisWord, svrChoice)
+			}
+
 		}
+
+		// wait before attempting to commit next word
+		// TODO: this doesn't produce *exactly* 1s period but that isn't critical
+		time.Sleep(1 * time.Second)
 	}
 
 	// stop all servers

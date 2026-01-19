@@ -22,10 +22,12 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *int) error {
 	currentTermLeader = p.LeaderID
 
 	// stop trying to win an election (and importantly incrementing the term to do so)
-	if p.Term > currentTerm {
-		log.Printf("Learned from server %v that we're actually in term %v (not %v)\n", p.LeaderID, p.Term, currentTerm)
+	if p.Term > st.CurrentTerm {
+		log.Printf("Learned from server %v that we're actually in term %v (not %v)\n", p.LeaderID, p.Term, st.CurrentTerm)
 		state = common.Follower
-		currentTerm = p.Term
+		st.CurrentTerm = p.Term
+		st.VotedFor = ""
+		writenvstate()
 	}
 	electiontimer.Reset()
 
@@ -49,26 +51,27 @@ type RVResp struct {
 func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 	log.Printf("Server %s requested a vote for term %v\n", p.CandidateId, p.Term)
 
-	if currentTerm < p.Term {
-		currentTerm = p.Term
+	if st.CurrentTerm < p.Term {
+		st.CurrentTerm = p.Term
 		state = common.Follower
-		votedForThisTerm = p.CandidateId
-		resp.Term = currentTerm
+		st.VotedFor = p.CandidateId
+		writenvstate()
+		resp.Term = st.CurrentTerm
 		resp.VoteGranted = true
-		log.Printf("Term incremented. Vote granted for term %v\n", currentTerm)
-	} else if currentTerm == p.Term {
-		resp.Term = currentTerm
-		if votedForThisTerm == "" { // not sure we should ever get to this case?
-			votedForThisTerm = p.CandidateId
+		log.Printf("Term incremented. Vote granted for term %v\n", st.CurrentTerm)
+	} else if st.CurrentTerm == p.Term {
+		resp.Term = st.CurrentTerm
+		if st.VotedFor == "" { // not sure we should ever get to this case?
+			st.VotedFor = p.CandidateId
 			resp.VoteGranted = true
-			log.Printf("Vote granted for term %v\n", currentTerm)
+			log.Printf("Vote granted for term %v\n", st.CurrentTerm)
 		} else { // we've already voted for someone
 			resp.VoteGranted = false
-			log.Printf("Vote denied, we've already voted for %v in term %v\n", votedForThisTerm, currentTerm)
+			log.Printf("Vote denied, we've already voted for %v in term %v\n", st.VotedFor, st.CurrentTerm)
 		}
 	} else {
 		resp.VoteGranted = false
-		log.Printf("Vote denied. Candidate %v term (%v) is behind current term (%v).\n", p.CandidateId, p.Term, currentTerm)
+		log.Printf("Vote denied. Candidate %v term (%v) is behind current term (%v).\n", p.CandidateId, p.Term, st.CurrentTerm)
 	}
 
 	// reset election timer here
@@ -79,25 +82,35 @@ func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 	return nil
 }
 
+// RPC for clients to submit requests to be committed
 func (r *RaftAPI) ProcessClientRequest(s []string, resp *common.RespToClient) error {
 
 	// in all cases, return current leader ID
 	resp.LeaderID = currentTermLeader
+	resp.AppendedToLeader = false
 
 	// if not leader, send client back the current leader ID
 	if state != common.Leader {
 		log.Printf("Redirecting a client request to leader (%v) to commit: %v\n", currentTermLeader, s)
-		resp.Committed = false
 		return nil
 	}
 
-	// if we are the leader, try to commit this to each server
-	// TODO: DO THIS HERE
+	// if we are the leader, add to our log which will trigger replication
 	log.Printf("Processing client request to commit: %v\n", s)
-	resp.Committed = true
+	for _, v := range s {
+		common.AppendLogEntry(st.CurrentTerm, v)
+	}
+	resp.AppendedToLeader = true
 	return nil
 }
 
+// RPC to allow clients to check whether all requests are committed
+func (r *RaftAPI) IsFullyCommitted(param int, resp *bool) error {
+	*resp = (commitIdx == len(common.RaftLog)) // remember commitIdx is 1-based
+	return nil
+}
+
+// RPC for clients to stop the server
 func (r *RaftAPI) StopServer(param int, resp *int) error {
 	log.Println("Received STOP from client, process will end on next loop")
 	stopServer = true
@@ -106,6 +119,7 @@ func (r *RaftAPI) StopServer(param int, resp *int) error {
 
 // simple ping function to test connectivity
 // could be integrated into AppendEntries but this is simpler for testing
+// could also just use IsFullyCommitted() but this is clearer
 func (r *RaftAPI) Ping(param int, resp *int) error {
 	*resp = 1
 	return nil

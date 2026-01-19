@@ -9,9 +9,9 @@ import (
 )
 
 type nvstate struct {
-	Term     int      `json:"term"`
-	LeaderID string   `json:"leaderID"`
-	Log      []string `json:"log"`
+	CurrentTerm int      `json:"term"`
+	VotedFor    string   `json:"votedFor"`
+	Log         []string `json:"log"`
 }
 
 // globals for non-volatile state
@@ -23,7 +23,7 @@ var stlock sync.RWMutex // Go doesn't like including lock in state struct due to
 func setterm(p int) {
 	stlock.Lock()
 	defer stlock.Unlock()
-	st.Term = p
+	st.CurrentTerm = p
 	writenvstate()
 }
 
@@ -31,7 +31,7 @@ func setterm(p int) {
 func setleaderid(p string) {
 	stlock.Lock()
 	defer stlock.Unlock()
-	st.LeaderID = p
+	st.VotedFor = p
 	writenvstate()
 }
 

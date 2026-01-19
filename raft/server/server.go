@@ -14,11 +14,12 @@ import (
 )
 
 // globals that need to be accessed by functions or RPCs
-var currentTerm int = 0
+// NOTE: these are different from the non-volatile state variables stored in nvstate.go (including the log!)
 var currentTermLeader string = ""
-var votedForThisTerm string = ""
 var commitIdx int = 0
-var lastApplied int = 0
+var nextIdx map[string]int = make(map[string]int)
+var matchIdx map[string]int = make(map[string]int)
+
 var state common.RaftState = common.Follower
 var electiontimer common.RaftTimer
 var servers map[string]common.NetworkAddress
@@ -107,8 +108,8 @@ func main() {
 	}
 
 	// show what we loaded from json
-	log.Printf("Loaded leaderID: '%v'\n", st.LeaderID)
-	log.Printf("Loaded term: %v\n", st.Term)
+	log.Printf("Loaded voted for: '%v'\n", st.VotedFor)
+	log.Printf("Loaded term: %v\n", st.CurrentTerm)
 	log.Printf("Loaded log: %v\n", st.Log)
 
 	// serve up our RPC API
@@ -151,6 +152,10 @@ func main() {
 						// set "up" status
 						isactive[svr_key] = true
 
+						// initialize nextIdx and matchIdx for this server
+						nextIdx[svr_key] = len(st.Log) + 1
+						matchIdx[svr_key] = 0
+
 						// break out of loop
 						break
 					}
@@ -177,7 +182,8 @@ func main() {
 	for !stopServer {
 
 		// DEBUG ONLY
-		if currentTerm > 10 {
+		// TODO: remove this before final version
+		if st.CurrentTerm > 10 {
 			log.Fatalf("Too many terms!")
 		}
 
@@ -187,7 +193,7 @@ func main() {
 				var retval int
 				err := servers[svr].Handle.Call("RaftAPI.Ping", 1, &retval)
 				if err != nil {
-					log.Printf("Attempting to reconnect to server %v\n", svr)
+					log.Printf("Error pinging server %v: %v\n", svr, err)
 					isactive[svr] = false
 					go reconnectToHost(svr)
 				}
@@ -203,14 +209,17 @@ func main() {
 		case common.Candidate:
 
 			// increment term
-			currentTerm += 1
-			votedForThisTerm = selfkey
-			numVotesReceived := 1 // vote for self
+			st.CurrentTerm += 1
+			st.VotedFor = selfkey
+			writenvstate()
+
+			// vote for self
+			numVotesReceived := 1
 			numBallotsReceived := 1
 			numBallotsSent := 1
 
-			log.Printf("Calling election for term %v\n", currentTerm)
-			electionTerm := currentTerm
+			log.Printf("Calling election for term %v\n", st.CurrentTerm)
+			electionTerm := st.CurrentTerm
 
 			// create a channel to receive votes
 			votechan := make(chan bool)
@@ -223,13 +232,13 @@ func main() {
 
 					// launch a goroutine to request vote on a channel
 					go func(svr string, votechannel chan bool) {
-						log.Printf("Requesting term %v vote from server %s", currentTerm, svr)
+						log.Printf("Requesting term %v vote from server %s", st.CurrentTerm, svr)
 
 						// prepare parameters for requesting vote
 						var rvp RVParams
 						rvp.CandidateId = selfkey
 						rvp.LastLogIndex = 0 // TODO: add correct value
-						rvp.Term = currentTerm
+						rvp.Term = st.CurrentTerm
 
 						var rvr RVResp
 						err := servers[svr].Handle.Call("RaftAPI.RequestVote", rvp, &rvr)
@@ -240,7 +249,7 @@ func main() {
 							go reconnectToHost(svr)
 						}
 						if err != nil {
-							log.Printf("Could not request term %v vote from server %s: %v\n", currentTerm, svr, err)
+							log.Printf("Could not request term %v vote from server %s: %v\n", st.CurrentTerm, svr, err)
 						}
 
 						votechannel <- rvr.VoteGranted // defaults to false
@@ -274,34 +283,34 @@ func main() {
 					// to declare victory even if we receive a majority of the votes much earlier
 					if numBallotsReceived == numBallotsSent {
 						done = true
-						if currentTerm == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
-							log.Printf("We won the term %v election\n", currentTerm)
+						if st.CurrentTerm == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
+							log.Printf("We won the term %v election\n", st.CurrentTerm)
 							state = common.Leader
-						} else if currentTerm != electionTerm {
-							log.Printf("Term changed during election to %v, reverting to follower\n", currentTerm)
+						} else if st.CurrentTerm != electionTerm {
+							log.Printf("Term changed during election to %v, reverting to follower\n", st.CurrentTerm)
 							state = common.Follower
-							votedForThisTerm = ""
+							st.VotedFor = ""
 						} else {
-							log.Printf("We did not win the term %v election\n", currentTerm)
+							log.Printf("We did not win the term %v election\n", st.CurrentTerm)
 							state = common.Follower
-							votedForThisTerm = ""
+							st.VotedFor = ""
 						}
 					}
 
 				// timeout case
 				case <-electiontimer.Timer.C:
-					log.Printf("Term %v election timed out waiting for votes\n", currentTerm)
+					log.Printf("Term %v election timed out waiting for votes\n", st.CurrentTerm)
 					done = true
 
 					// check to see if we won...
 					// TODO: remove this once we fix the logic in the election piece with
-					if currentTerm == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
-						log.Printf("We won the term %v election but only received %v ballots\n", currentTerm, numBallotsReceived)
+					if st.CurrentTerm == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
+						log.Printf("We won the term %v election but only received %v ballots\n", st.CurrentTerm, numBallotsReceived)
 						state = common.Leader
-					} else if currentTerm != electionTerm {
-						log.Printf("Term changed during election to %v, reverting to follower\n", currentTerm)
+					} else if st.CurrentTerm != electionTerm {
+						log.Printf("Term changed during election to %v, reverting to follower\n", st.CurrentTerm)
 						state = common.Follower
-						votedForThisTerm = ""
+						st.VotedFor = ""
 					}
 
 					// otherwise we remain a candidate and will re-run the election
@@ -324,15 +333,15 @@ func main() {
 			/**/
 			for svr := range servers {
 				if svr != selfkey && !isactive[svr] {
-					log.Printf("NOT sending term %v heartbeat to sever %v which is apparently offline\n", currentTerm, svr)
+					log.Printf("NOT sending term %v heartbeat to sever %v which is apparently offline\n", st.CurrentTerm, svr)
 				}
 				if svr != selfkey && isactive[svr] {
-					log.Printf("Sending term %v heartbeat to server %s\n", currentTerm, svr)
+					log.Printf("Sending term %v heartbeat to server %s\n", st.CurrentTerm, svr)
 					var retval int
 
 					// prepare parameters for append entries
 					var rap AEParams
-					rap.Term = currentTerm
+					rap.Term = st.CurrentTerm
 					rap.LeaderID = selfkey
 					rap.LeaderCommit = 0 // TODO: fix this
 					rap.PrevLogIndex = 0 // TODO: fix this
@@ -350,8 +359,12 @@ func main() {
 					}
 				}
 			}
-			/**/
-			time.Sleep(4 * time.Second) // TODO: REMOVE... FOR DEBUGGING ONLY!
+
+			// wait between heartbeats
+			time.Sleep(4 * time.Second) // TODO: SHORTEN THIS FOR REAL HEARTBEATS
+
+		default:
+			log.Fatal("Unknown state: ", state)
 
 		}
 

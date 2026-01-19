@@ -30,16 +30,16 @@ func TestLoadNonExistantFile(t *testing.T) {
 	}
 
 	// make sure that default values are set
-	if st.Term != 0 {
-		t.Fatalf("Expected default Term of 0, got %d\n", st.Term)
+	if st.CurrentTerm != 0 {
+		t.Fatalf("Expected default Term of 0, got %d\n", st.CurrentTerm)
 	}
-	if st.LeaderID != "" {
-		t.Fatalf("Expected default LeaderID of empty string, got %s\n", st.LeaderID)
+	if st.VotedFor != "" {
+		t.Fatalf("Expected default VotedFor value of empty string, got %s\n", st.VotedFor)
 	}
 	if st.Log != nil {
 		t.Fatalf("Expected default Log of empty slice, got %v\n", st.Log)
 	}
-	t.Logf("Default values set correctly: Term=%d, LeaderID='%s', Log = nil slice\n", st.Term, st.LeaderID)
+	t.Logf("Default values set correctly: Term=%d, VotedFor='%s', Log = nil slice\n", st.CurrentTerm, st.VotedFor)
 
 }
 
@@ -51,7 +51,7 @@ func TestWriteAndReadNVState(t *testing.T) {
 	setterm(42)
 	setleaderid("TestServer")
 	st.Log = append(st.Log, "command1", "command2", "command3")
-	t.Logf("Set nvstate to: Term=%d, LeaderID='%s', Log=%v\n", st.Term, st.LeaderID, st.Log)
+	t.Logf("Set nvstate to: Term=%d, VotedFor='%s', Log=%v\n", st.CurrentTerm, st.VotedFor, st.Log)
 
 	// write to file
 	err := writenvstate()
@@ -60,10 +60,10 @@ func TestWriteAndReadNVState(t *testing.T) {
 	}
 
 	// reset in-memory nvstate
-	st.Term = 0
-	st.LeaderID = ""
+	st.CurrentTerm = 0
+	st.VotedFor = ""
 	st.Log = nil
-	t.Logf("Reset in-memory nvstate to: Term=%d, LeaderID='%s', Log=%v\n", st.Term, st.LeaderID, st.Log)
+	t.Logf("Reset in-memory nvstate to: Term=%d, VotedFor='%s', Log=%v\n", st.CurrentTerm, st.VotedFor, st.Log)
 
 	// read from file
 	err = readnvstate()
@@ -72,11 +72,11 @@ func TestWriteAndReadNVState(t *testing.T) {
 	}
 
 	// verify values
-	if st.Term != 42 {
-		t.Fatalf("Expected Term of 42, got %d\n", st.Term)
+	if st.CurrentTerm != 42 {
+		t.Fatalf("Expected Term of 42, got %d\n", st.CurrentTerm)
 	}
-	if st.LeaderID != "TestServer" {
-		t.Fatalf("Expected LeaderID of 'TestServer', got '%s'\n", st.LeaderID)
+	if st.VotedFor != "TestServer" {
+		t.Fatalf("Expected VotedFor of 'TestServer', got '%s'\n", st.VotedFor)
 	}
 	if len(st.Log) != 3 {
 		t.Fatalf("Expected Log of length 3, got %d\n", len(st.Log))
@@ -86,5 +86,5 @@ func TestWriteAndReadNVState(t *testing.T) {
 			t.Fatalf("Expected Log[%d] to be '%s', got '%s'\n", i, cmd, st.Log[i])
 		}
 	}
-	t.Logf("Values verified correctly: Term=%d, LeaderID='%s', Log=%v\n", st.Term, st.LeaderID, st.Log)
+	t.Logf("Values verified correctly: Term=%d, VotedFor='%s', Log=%v\n", st.CurrentTerm, st.VotedFor, st.Log)
 }
