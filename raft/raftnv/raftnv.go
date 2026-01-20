@@ -1,4 +1,4 @@
-package common
+package raftnv
 
 import (
 	"encoding/json"

@@ -2,6 +2,7 @@ package main
 
 import (
 	"engg415/raft/common"
+	"engg415/raft/raftnv"
 	"fmt"
 	"io"
 	"log"
@@ -15,7 +16,7 @@ import (
 
 // globals that need to be accessed by functions or RPCs
 
-var st common.NVState
+var st raftnv.NVState
 
 var currentTermLeader string = ""
 var commitIdx int = 0
