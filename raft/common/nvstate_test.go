@@ -1,6 +1,7 @@
-package main
+package common
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -14,19 +15,22 @@ func TestMain(m *testing.M) {
 
 // NVSTATE: attempt to read a non-existent file, this should succeed with default values set for nvstate
 func TestLoadNonExistantFile(t *testing.T) {
-	jsonfilename = "notafile.json"
+
+	// create a state object
+	var st NVState
+	st.JSONFilename = "notafile.json"
 
 	// confirm that file does not exist
-	_, err := os.Stat(jsonfilename)
+	_, err := os.Stat(st.JSONFilename)
 	if err == nil {
-		t.Fatalf("File %s exists! Delete it and rerun test\n", jsonfilename)
+		t.Fatalf("File %s exists! Delete it and rerun test\n", st.JSONFilename)
 	}
-	t.Logf("Confirmed that file %s does not exist\n", jsonfilename)
+	t.Logf("Confirmed that file %s does not exist\n", st.JSONFilename)
 
 	// attempt to read non-existent file
-	err = readnvstate()
+	err = st.ReadNVState()
 	if err != nil {
-		t.Fatalf("readnvstate() failed with error: %v\n", err)
+		t.Fatalf("ReadNVState() failed with error: %v\n", err)
 	}
 
 	// make sure that default values are set
@@ -45,18 +49,24 @@ func TestLoadNonExistantFile(t *testing.T) {
 
 // NVSTATE: attempt to write and read nvstate to/from file
 func TestWriteAndReadNVState(t *testing.T) {
-	jsonfilename = "testnvstate.json"
-	defer os.Remove(jsonfilename) // clean up file when done
+
+	// create a state object
+	var st NVState
+	st.JSONFilename = "testnvstate.json"
+	defer os.Remove(st.JSONFilename)
+
 	// set some values
-	setterm(42)
-	setleaderid("TestServer")
-	st.Log = append(st.Log, "command1", "command2", "command3")
+	st.SetTerm(42)
+	st.SetVotedFor("TestServer")
+	for i := 0; i <= 2; i++ {
+		st.AppendLogEntry((42 + i), fmt.Sprintf("command%02d", i+1))
+	}
 	t.Logf("Set nvstate to: Term=%d, VotedFor='%s', Log=%v\n", st.CurrentTerm, st.VotedFor, st.Log)
 
 	// write to file
-	err := writenvstate()
+	err := st.WriteNVState()
 	if err != nil {
-		t.Fatalf("writenvstate() failed with error: %v\n", err)
+		t.Fatalf("WriteNVState() failed with error: %v\n", err)
 	}
 
 	// reset in-memory nvstate
@@ -66,9 +76,9 @@ func TestWriteAndReadNVState(t *testing.T) {
 	t.Logf("Reset in-memory nvstate to: Term=%d, VotedFor='%s', Log=%v\n", st.CurrentTerm, st.VotedFor, st.Log)
 
 	// read from file
-	err = readnvstate()
+	err = st.ReadNVState()
 	if err != nil {
-		t.Fatalf("readnvstate() failed with error: %v\n", err)
+		t.Fatalf("ReadNVState() failed with error: %v\n", err)
 	}
 
 	// verify values
@@ -81,9 +91,9 @@ func TestWriteAndReadNVState(t *testing.T) {
 	if len(st.Log) != 3 {
 		t.Fatalf("Expected Log of length 3, got %d\n", len(st.Log))
 	}
-	for i, cmd := range []string{"command1", "command2", "command3"} {
-		if st.Log[i] != cmd {
-			t.Fatalf("Expected Log[%d] to be '%s', got '%s'\n", i, cmd, st.Log[i])
+	for i, cmd := range []string{"command01", "command02", "command03"} {
+		if st.Log[i].Value != cmd {
+			t.Fatalf("Expected Log[%d] to be '(%d,%s)', got '(%d,%s)'\n", i, i+42, cmd, st.Log[i].Term, st.Log[i].Value)
 		}
 	}
 	t.Logf("Values verified correctly: Term=%d, VotedFor='%s', Log=%v\n", st.CurrentTerm, st.VotedFor, st.Log)

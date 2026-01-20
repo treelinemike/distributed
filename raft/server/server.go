@@ -14,7 +14,9 @@ import (
 )
 
 // globals that need to be accessed by functions or RPCs
-// NOTE: these are different from the non-volatile state variables stored in nvstate.go (including the log!)
+
+var st common.NVState
+
 var currentTermLeader string = ""
 var commitIdx int = 0
 var nextIdx map[string]int = make(map[string]int)
@@ -100,9 +102,9 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds) // for good measure?
 
 	// load non-volatile state if it has been previously saved
-	jsonfilename = jsonfilebase + "_" + selfkey + ".json"
-	log.Println("Attempting to load non-volatile state from file: ", jsonfilename)
-	err = readnvstate()
+	st.JSONFilename = jsonfilebase + "_" + selfkey + ".json"
+	log.Println("Attempting to load non-volatile state from file: ", st.JSONFilename)
+	err = st.ReadNVState()
 	if err != nil {
 		log.Fatal("Error initializing initial state")
 	}
@@ -209,9 +211,9 @@ func main() {
 		case common.Candidate:
 
 			// increment term
-			st.CurrentTerm += 1
-			st.VotedFor = selfkey
-			writenvstate()
+			st.SetTerm(st.CurrentTerm + 1)
+			st.SetVotedFor(selfkey)
+			st.WriteNVState()
 
 			// vote for self
 			numVotesReceived := 1
@@ -289,11 +291,11 @@ func main() {
 						} else if st.CurrentTerm != electionTerm {
 							log.Printf("Term changed during election to %v, reverting to follower\n", st.CurrentTerm)
 							state = common.Follower
-							st.VotedFor = ""
+							st.SetVotedFor("")
 						} else {
 							log.Printf("We did not win the term %v election\n", st.CurrentTerm)
 							state = common.Follower
-							st.VotedFor = ""
+							st.SetVotedFor("")
 						}
 					}
 
@@ -310,7 +312,7 @@ func main() {
 					} else if st.CurrentTerm != electionTerm {
 						log.Printf("Term changed during election to %v, reverting to follower\n", st.CurrentTerm)
 						state = common.Follower
-						st.VotedFor = ""
+						st.SetVotedFor("")
 					}
 
 					// otherwise we remain a candidate and will re-run the election

@@ -27,7 +27,7 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *int) error {
 		state = common.Follower
 		st.CurrentTerm = p.Term
 		st.VotedFor = ""
-		writenvstate()
+		st.WriteNVState()
 	}
 	electiontimer.Reset()
 
@@ -55,7 +55,7 @@ func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 		st.CurrentTerm = p.Term
 		state = common.Follower
 		st.VotedFor = p.CandidateId
-		writenvstate()
+		st.WriteNVState()
 		resp.Term = st.CurrentTerm
 		resp.VoteGranted = true
 		log.Printf("Term incremented. Vote granted for term %v\n", st.CurrentTerm)
@@ -98,7 +98,7 @@ func (r *RaftAPI) ProcessClientRequest(s []string, resp *common.RespToClient) er
 	// if we are the leader, add to our log which will trigger replication
 	log.Printf("Processing client request to commit: %v\n", s)
 	for _, v := range s {
-		common.AppendLogEntry(st.CurrentTerm, v)
+		st.AppendLogEntry(st.CurrentTerm, v)
 	}
 	resp.AppendedToLeader = true
 	return nil
@@ -106,7 +106,7 @@ func (r *RaftAPI) ProcessClientRequest(s []string, resp *common.RespToClient) er
 
 // RPC to allow clients to check whether all requests are committed
 func (r *RaftAPI) IsFullyCommitted(param int, resp *bool) error {
-	*resp = (commitIdx == len(common.RaftLog)) // remember commitIdx is 1-based
+	*resp = (commitIdx == len(st.Log)) // remember commitIdx is 1-based
 	return nil
 }
 
