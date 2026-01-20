@@ -103,17 +103,17 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds) // for good measure?
 
 	// load non-volatile state if it has been previously saved
-	st.JSONFilename = jsonfilebase + "_" + selfkey + ".json"
-	log.Println("Attempting to load non-volatile state from file: ", st.JSONFilename)
+	st.SetJSONFilename(jsonfilebase + "_" + selfkey + ".json")
+	log.Println("Attempting to load non-volatile state from file: ", st.GetJSONFilename())
 	err = st.ReadNVState()
 	if err != nil {
 		log.Fatal("Error initializing initial state")
 	}
 
 	// show what we loaded from json
-	log.Printf("Loaded voted for: '%v'\n", st.VotedFor)
-	log.Printf("Loaded term: %v\n", st.CurrentTerm)
-	log.Printf("Loaded log: %v\n", st.Log)
+	log.Printf("Loaded voted for: '%v'\n", st.GetVotedFor())
+	log.Printf("Loaded term: %v\n", st.GetCurrentTerm())
+	log.Printf("Loaded log: %v\n", st.Log) // accessing field directly for debug/logging only
 
 	// serve up our RPC API
 	log.Println("Registering RPCs for access on port", servers[selfkey].Port)
@@ -156,7 +156,7 @@ func main() {
 						isactive[svr_key] = true
 
 						// initialize nextIdx and matchIdx for this server
-						nextIdx[svr_key] = len(st.Log) + 1
+						nextIdx[svr_key] = st.LogLength() + 1
 						matchIdx[svr_key] = 0
 
 						// break out of loop
@@ -186,7 +186,7 @@ func main() {
 
 		// DEBUG ONLY
 		// TODO: remove this before final version
-		if st.CurrentTerm > 10 {
+		if st.GetCurrentTerm() > 10 {
 			log.Fatalf("Too many terms!")
 		}
 
@@ -212,7 +212,7 @@ func main() {
 		case common.Candidate:
 
 			// increment term
-			st.SetTerm(st.CurrentTerm + 1)
+			st.SetCurrentTerm(st.GetCurrentTerm() + 1)
 			st.SetVotedFor(selfkey)
 			st.WriteNVState()
 
@@ -221,8 +221,8 @@ func main() {
 			numBallotsReceived := 1
 			numBallotsSent := 1
 
-			log.Printf("Calling election for term %v\n", st.CurrentTerm)
-			electionTerm := st.CurrentTerm
+			log.Printf("Calling election for term %v\n", st.GetCurrentTerm())
+			electionTerm := st.GetCurrentTerm()
 
 			// create a channel to receive votes
 			votechan := make(chan bool)
@@ -235,13 +235,13 @@ func main() {
 
 					// launch a goroutine to request vote on a channel
 					go func(svr string, votechannel chan bool) {
-						log.Printf("Requesting term %v vote from server %s", st.CurrentTerm, svr)
+						log.Printf("Requesting term %v vote from server %s", st.GetCurrentTerm(), svr)
 
 						// prepare parameters for requesting vote
 						var rvp RVParams
 						rvp.CandidateId = selfkey
 						rvp.LastLogIndex = 0 // TODO: add correct value
-						rvp.Term = st.CurrentTerm
+						rvp.Term = st.GetCurrentTerm()
 
 						var rvr RVResp
 						err := servers[svr].Handle.Call("RaftAPI.RequestVote", rvp, &rvr)
@@ -286,15 +286,15 @@ func main() {
 					// to declare victory even if we receive a majority of the votes much earlier
 					if numBallotsReceived == numBallotsSent {
 						done = true
-						if st.CurrentTerm == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
-							log.Printf("We won the term %v election\n", st.CurrentTerm)
+						if st.GetCurrentTerm() == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
+							log.Printf("We won the term %v election\n", st.GetCurrentTerm())
 							state = common.Leader
-						} else if st.CurrentTerm != electionTerm {
-							log.Printf("Term changed during election to %v, reverting to follower\n", st.CurrentTerm)
+						} else if st.GetCurrentTerm() != electionTerm {
+							log.Printf("Term changed during election to %v, reverting to follower\n", st.GetCurrentTerm())
 							state = common.Follower
 							st.SetVotedFor("")
 						} else {
-							log.Printf("We did not win the term %v election\n", st.CurrentTerm)
+							log.Printf("We did not win the term %v election\n", st.GetCurrentTerm())
 							state = common.Follower
 							st.SetVotedFor("")
 						}
@@ -302,16 +302,16 @@ func main() {
 
 				// timeout case
 				case <-electiontimer.Timer.C:
-					log.Printf("Term %v election timed out waiting for votes\n", st.CurrentTerm)
+					log.Printf("Term %v election timed out waiting for votes\n", st.GetCurrentTerm())
 					done = true
 
 					// check to see if we won...
 					// TODO: remove this once we fix the logic in the election piece with
-					if st.CurrentTerm == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
-						log.Printf("We won the term %v election but only received %v ballots\n", st.CurrentTerm, numBallotsReceived)
+					if st.GetCurrentTerm() == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
+						log.Printf("We won the term %v election but only received %v ballots\n", st.GetCurrentTerm(), numBallotsReceived)
 						state = common.Leader
-					} else if st.CurrentTerm != electionTerm {
-						log.Printf("Term changed during election to %v, reverting to follower\n", st.CurrentTerm)
+					} else if st.GetCurrentTerm() != electionTerm {
+						log.Printf("Term changed during election to %v, reverting to follower\n", st.GetCurrentTerm())
 						state = common.Follower
 						st.SetVotedFor("")
 					}
@@ -344,7 +344,7 @@ func main() {
 
 					// prepare parameters for append entries
 					var rap AEParams
-					rap.Term = st.CurrentTerm
+					rap.Term = st.GetCurrentTerm()
 					rap.LeaderID = selfkey
 					rap.LeaderCommit = 0 // TODO: fix this
 					rap.PrevLogIndex = 0 // TODO: fix this

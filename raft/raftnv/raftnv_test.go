@@ -18,14 +18,14 @@ func TestLoadNonExistantFile(t *testing.T) {
 
 	// create a state object
 	var st NVState
-	st.JSONFilename = "notafile.json"
+	st.SetJSONFilename("notafile.json")
 
 	// confirm that file does not exist
-	_, err := os.Stat(st.JSONFilename)
+	_, err := os.Stat(st.GetJSONFilename())
 	if err == nil {
-		t.Fatalf("File %s exists! Delete it and rerun test\n", st.JSONFilename)
+		t.Fatalf("File %s exists! Delete it and rerun test\n", st.GetJSONFilename())
 	}
-	t.Logf("Confirmed that file %s does not exist\n", st.JSONFilename)
+	t.Logf("Confirmed that file %s does not exist\n", st.GetJSONFilename())
 
 	// attempt to read non-existent file
 	err = st.ReadNVState()
@@ -52,11 +52,11 @@ func TestWriteAndReadNVState(t *testing.T) {
 
 	// create a state object
 	var st NVState
-	st.JSONFilename = "testnvstate.json"
-	defer os.Remove(st.JSONFilename)
+	st.SetJSONFilename("testnvstate.json")
+	defer os.Remove(st.GetJSONFilename())
 
 	// set some values
-	st.SetTerm(42)
+	st.SetCurrentTerm(42)
 	st.SetVotedFor("TestServer")
 	for i := 0; i <= 2; i++ {
 		st.AppendLogEntry((42 + i), fmt.Sprintf("command%02d", i+1))

@@ -13,23 +13,62 @@ type RaftLogEntry struct {
 	Value string
 }
 
+// Note: CurrentTerm, VotedFor, and Log must be exported to be encoded/decoded by json package,
+// but we want to be careful about concurrent access, so we use a RWMutex to protect them which requires
+// us to be good about using getter and setter functions for access
+// TODO: use a separate data structure for json encoding/decoding to avoid exporting these fields?
 type NVState struct {
-	JSONFilename string         `json:"-"`
+	jsonFilename string         `json:"-"`
 	lock         sync.RWMutex   `json:"-"`
 	CurrentTerm  int            `json:"term"`
 	VotedFor     string         `json:"votedFor"`
 	Log          []RaftLogEntry `json:"log"`
 }
 
-// setter function for term
-func (nvs *NVState) SetTerm(p int) {
+// get log length
+func (nvs *NVState) LogLength() int {
+	nvs.lock.RLock()
+	defer nvs.lock.RUnlock()
+	return len(nvs.Log)
+}
+
+// jsonFilename getter function
+func (nvs *NVState) GetJSONFilename() string {
+	nvs.lock.RLock()
+	defer nvs.lock.RUnlock()
+	return nvs.jsonFilename
+}
+
+// jsonFilename setter function
+func (nvs *NVState) SetJSONFilename(filename string) {
+	nvs.lock.Lock()
+	defer nvs.lock.Unlock()
+	nvs.jsonFilename = filename
+}
+
+// CurrentTerm getter function
+func (nvs *NVState) GetCurrentTerm() int { // not idomatic Go, but we need to export both field and method
+	nvs.lock.RLock()
+	defer nvs.lock.RUnlock()
+	return nvs.CurrentTerm
+}
+
+// CurrentTerm setter function
+func (nvs *NVState) SetCurrentTerm(p int) {
 	nvs.lock.Lock()
 	defer nvs.lock.Unlock()
 	nvs.CurrentTerm = p
 	nvs.WriteNVState()
 }
 
-// setter function for votedFor
+// VotedFor getter function
+func (nvs *NVState) GetVotedFor() string {
+	nvs.lock.RLock()
+	defer nvs.lock.RUnlock()
+	return nvs.VotedFor
+}
+
+// VotedFor setter function
 func (nvs *NVState) SetVotedFor(p string) {
 	nvs.lock.Lock()
 	defer nvs.lock.Unlock()
@@ -37,22 +76,23 @@ func (nvs *NVState) SetVotedFor(p string) {
 	nvs.WriteNVState()
 }
 
+// load state from non-volatile storage (json file)
 func (nvs *NVState) ReadNVState() error {
 
 	// load the json file if it exists, otherwise load default initial state values
-	filestat, err := os.Stat(nvs.JSONFilename)
+	filestat, err := os.Stat(nvs.jsonFilename)
 	if err == nil {
 
 		// JSON FILE EXISTS
 
 		// make sure this path isn't a directory
 		if filestat.IsDir() {
-			return errors.New("Error: " + nvs.JSONFilename + " is a directory!")
+			return errors.New("Error: " + nvs.jsonFilename + " is a directory!")
 		}
 
 		// load json file
-		log.Println("File ", nvs.JSONFilename, " exists, loading nvstate from it...")
-		infile, err := os.OpenFile(nvs.JSONFilename, os.O_RDONLY, os.ModePerm)
+		log.Println("File ", nvs.jsonFilename, " exists, loading nvstate from it...")
+		infile, err := os.OpenFile(nvs.jsonFilename, os.O_RDONLY, os.ModePerm)
 		if err != nil {
 			return err
 		}
@@ -68,7 +108,7 @@ func (nvs *NVState) ReadNVState() error {
 	} else {
 
 		// JSON FILE DOES NOT EXIST
-		log.Println("File ", nvs.JSONFilename, " does not exist, so setting nvstate elements to default initial values...")
+		log.Println("File ", nvs.jsonFilename, " does not exist, so setting nvstate elements to default initial values...")
 
 		// we don't really need to do anything here since the zero values are fine
 		//st.Term = 0
@@ -85,7 +125,7 @@ func (nvs *NVState) ReadNVState() error {
 func (nvs *NVState) WriteNVState() error {
 
 	log.Println("Writing nvstate to file...")
-	outfile, _ := os.OpenFile(nvs.JSONFilename, os.O_CREATE, os.ModePerm)
+	outfile, _ := os.OpenFile(nvs.jsonFilename, os.O_CREATE, os.ModePerm)
 	defer outfile.Close()
 	encoder := json.NewEncoder(outfile)
 	encoder.SetIndent("", "  ")
