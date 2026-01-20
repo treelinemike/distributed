@@ -21,26 +21,6 @@ type NVState struct {
 	Log          []RaftLogEntry `json:"log"`
 }
 
-//var stlock sync.RWMutex // Go doesn't like including lock in state struct due to json marshalling
-
-func (nvs *NVState) AppendLogEntry(term int, value string) {
-	entry := RaftLogEntry{
-		Term:  term,
-		Value: value,
-	}
-	nvs.lock.Lock()
-	defer nvs.lock.Unlock()
-	nvs.Log = append(nvs.Log, entry)
-	nvs.WriteNVState()
-}
-
-func (nvs *NVState) GetLogTerm(index int) int {
-	if index < 1 || index > len(nvs.Log) {
-		return -1
-	}
-	return nvs.Log[index-1].Term
-}
-
 // setter function for term
 func (nvs *NVState) SetTerm(p int) {
 	nvs.lock.Lock()
@@ -113,4 +93,22 @@ func (nvs *NVState) WriteNVState() error {
 
 	// done
 	return nil
+}
+
+func (nvs *NVState) AppendLogEntry(term int, value string) {
+	entry := RaftLogEntry{
+		Term:  term,
+		Value: value,
+	}
+	nvs.lock.Lock()
+	defer nvs.lock.Unlock()
+	nvs.Log = append(nvs.Log, entry)
+	nvs.WriteNVState()
+}
+
+func (nvs *NVState) GetLogTerm(index int) int {
+	if index < 1 || index > len(nvs.Log) {
+		return -1
+	}
+	return nvs.Log[index-1].Term
 }
