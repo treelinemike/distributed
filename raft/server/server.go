@@ -16,20 +16,32 @@ import (
 
 // globals that need to be accessed by functions or RPCs
 
+// non-volatile storage for current term, voted for, and log entries
 var st raftnv.NVState
 
+// volatile storage on this server
 var currentTermLeader string = ""
 var commitIdx int = 0
 var nextIdx map[string]int = make(map[string]int)
 var matchIdx map[string]int = make(map[string]int)
-
 var state common.RaftState = common.Follower
 var electiontimer common.RaftTimer
 var servers map[string]common.NetworkAddress
 var isactive map[string]bool
 var stopServer bool = false
 
-// repeatedly attempt to reconnect to host
+// function to reset nextIdx and matchIdx upon election as leader
+func resetLeaderIndices() {
+	for svr := range servers {
+		if svr != "" {
+			nextIdx[svr] = st.LogLength() + 1
+			matchIdx[svr] = 0
+		}
+	}
+}
+
+// function to repeatedly attempt reconnecting to another server
+// will be launched as a goroutine
 func reconnectToHost(svr string) {
 	log.Printf("Attempting to reconnect to server %v (%s:%s)\n", svr, servers[svr].Address, servers[svr].Port)
 	for {
@@ -49,10 +61,10 @@ func reconnectToHost(svr string) {
 			// break out of loop
 			break
 		}
-
 	}
 }
 
+// main function/goroutine for the peer raft servers
 func main() {
 
 	var err error
@@ -289,6 +301,7 @@ func main() {
 						if st.GetCurrentTerm() == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
 							log.Printf("We won the term %v election\n", st.GetCurrentTerm())
 							state = common.Leader
+							resetLeaderIndices()
 						} else if st.GetCurrentTerm() != electionTerm {
 							log.Printf("Term changed during election to %v, reverting to follower\n", st.GetCurrentTerm())
 							state = common.Follower
@@ -310,6 +323,7 @@ func main() {
 					if st.GetCurrentTerm() == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
 						log.Printf("We won the term %v election but only received %v ballots\n", st.GetCurrentTerm(), numBallotsReceived)
 						state = common.Leader
+						resetLeaderIndices()
 					} else if st.GetCurrentTerm() != electionTerm {
 						log.Printf("Term changed during election to %v, reverting to follower\n", st.GetCurrentTerm())
 						state = common.Follower
@@ -332,24 +346,70 @@ func main() {
 
 		case common.Leader:
 
-			// sent heartbeat (AppendEntries RPCs with empty entries slice) to all followers
-			/**/
+			// sent AppendEntries RPCs to all followers
 			for svr := range servers {
 				if svr != selfkey && !isactive[svr] {
 					log.Printf("NOT sending term %v heartbeat to sever %v which is apparently offline\n", st.CurrentTerm, svr)
 				}
 				if svr != selfkey && isactive[svr] {
-					log.Printf("Sending term %v heartbeat to server %s\n", st.CurrentTerm, svr)
-					var retval int
+					log.Printf("Sending term %v AERPC to server %s\n", st.CurrentTerm, svr)
 
-					// prepare parameters for append entries
-					var rap AEParams
-					rap.Term = st.GetCurrentTerm()
-					rap.LeaderID = selfkey
-					rap.LeaderCommit = 0 // TODO: fix this
-					rap.PrevLogIndex = 0 // TODO: fix this
+					// prepare parameters for calling append entries RPC
+					var aeresp AEResp
+					var aeparam AEParams
+					aeparam.Term = st.GetCurrentTerm()
+					aeparam.LeaderID = selfkey
+					aeparam.LeaderCommit = commitIdx
+					aeparam.PrevLogIndex = nextIdx[svr] - 1   // previous log intex always one before next index
+					aeparam.Entries = []raftnv.RaftLogEntry{} // default: empty slice of entries, this would happen anyway
 
-					err := servers[svr].Handle.Call("RaftAPI.AppendEntries", rap, &retval)
+					// prepare parameters for AppendEntries RPC based on follower status
+					if nextIdx[svr] == (st.LogLength() + 1) {
+
+						// follower log is up to date -> send heartbeat (empty) AERPC
+						// this case should also run when both leader and follower logs are empty
+						aeparam.PrevLogTerm = 0
+						if st.LogLength() > 0 {
+							prevEntry, err := st.GetLogEntry(st.LogLength())
+							if err != nil {
+								log.Panicf("Error getting previous log entry for server %s: %v\n", svr, err)
+							}
+							aeparam.PrevLogTerm = prevEntry.Term
+						}
+
+					} else if nextIdx[svr] == 1 {
+
+						// follower log is empty -> sent first entry
+						// the heartbeat case coming first means we know there is at least one entry in the leader log
+						aeparam.PrevLogTerm = 0
+						nextEntry, err := st.GetLogEntry(nextIdx[svr])
+						if err != nil {
+							log.Panicf("Error getting next log entry for server %s: %v\n", svr, err)
+						}
+						aeparam.Entries = []raftnv.RaftLogEntry{nextEntry}
+
+					} else if nextIdx[svr] <= st.LogLength() {
+
+						// follower log is behind leader -> send next entry
+						prevEntry, err := st.GetLogEntry(nextIdx[svr] - 1)
+						if err != nil {
+							log.Panicf("Error getting previous log entry for server %s: %v\n", svr, err)
+						}
+						nextEntry, err := st.GetLogEntry(nextIdx[svr])
+						if err != nil {
+							log.Panicf("Error getting next log entry for server %s: %v\n", svr, err)
+						}
+						aeparam.PrevLogTerm = prevEntry.Term
+						aeparam.Entries = []raftnv.RaftLogEntry{nextEntry}
+
+					} else {
+
+						// that SHOULD be all of our cases...
+						log.Panicf("Invalid nextIdx case planning AppendEntries RPC\n")
+					}
+
+					// SEND IT!
+					err := servers[svr].Handle.Call("RaftAPI.AppendEntries", aeparam, &aeresp)
 					if err != nil {
 						log.Printf("Error calling append entries on server %s: %v\n", svr, err)
 					}
@@ -359,12 +419,60 @@ func main() {
 					if err == rpc.ErrShutdown {
 						isactive[svr] = false
 						go reconnectToHost(svr)
+						continue
 					}
+
+					// if the follower is at a more current term we need to step down
+					if !aeresp.Success && aeresp.Term > st.GetCurrentTerm() {
+						log.Printf("Follower %s is at a more current term %v, stepping down\n", svr, aeresp.Term)
+						state = common.Follower
+						st.SetCurrentTerm(aeresp.Term)
+						st.SetVotedFor("")
+						st.WriteNVState()
+						continue
+					}
+
+					// if AppendtEntries RPC failed, decrement nextIdx for that server (will try again next time)
+					if !aeresp.Success {
+						log.Printf("AppendEntries RPC to server %s failed, decrementing nextIdx from %v to %v\n", svr, nextIdx[svr], nextIdx[svr]-1)
+						nextIdx[svr] -= 1
+					} else {
+						// success case, increment nextIdx and matchIdx for that server
+						log.Printf("AppendEntries RPC to server %s succeeded.\n", svr)
+						if len(aeparam.Entries) > 0 {
+							log.Printf("Incrementing nextIdx from %v to %v and matchIdx from %v to %v\n", nextIdx[svr], nextIdx[svr]+len(aeparam.Entries), matchIdx[svr], matchIdx[svr]+len(aeparam.Entries))
+							nextIdx[svr] += len(aeparam.Entries)
+							matchIdx[svr] += len(aeparam.Entries) // TODO THIS ISN'T WORKING QUITE RIGHT
+						}
+					}
+
 				}
 			}
 
-			// wait between heartbeats
-			time.Sleep(4 * time.Second) // TODO: SHORTEN THIS FOR REAL HEARTBEATS
+			// determine whether any new entries can be committed
+			// TODO: paper also has condition that entry must be from current term...
+			for i := commitIdx + 1; i <= st.LogLength(); i++ {
+				// count how many servers have this log entry
+				count := 0
+				for _, match := range matchIdx {
+					if match >= i {
+						count++
+					}
+				}
+				// if majority of servers have this log entry, commit it
+				if count > len(servers)/2 {
+					entr, err := st.GetLogEntry(i)
+					if err != nil {
+						log.Panicf("Error getting log entry %v to commit: %v\n", i, err)
+					}
+					log.Printf("Committing log entry at index %v ('%v'))\n", i, entr.Value)
+					commitIdx = i
+				}
+			}
+
+			// wait between AppendEntries RPCs
+			// TODO: if we have something to send we should send it immediately rather than waiting for the heartbeat interval
+			time.Sleep(500 * time.Millisecond)
 
 		default:
 			log.Fatal("Unknown state: ", state)

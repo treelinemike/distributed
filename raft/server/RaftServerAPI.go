@@ -2,39 +2,11 @@ package main
 
 import (
 	"engg415/raft/common"
+	"engg415/raft/raftnv"
 	"log"
 )
 
 type RaftAPI int
-
-// TODO: struct members don't need to be exported if we're keeping in the server.go main package
-type AEParams struct {
-	Term         int
-	LeaderID     string
-	PrevLogIndex int
-	LeaderCommit int
-}
-
-func (r *RaftAPI) AppendEntries(p AEParams, resp *int) error {
-	log.Printf("AppendEntriesRPC received in term %d from leader %v\n", p.Term, p.LeaderID)
-
-	// update LeaderID so we can redirect any client requests
-	currentTermLeader = p.LeaderID
-
-	// stop trying to win an election (and importantly incrementing the term to do so)
-	if p.Term > st.CurrentTerm {
-		log.Printf("Learned from server %v that we're actually in term %v (not %v)\n", p.LeaderID, p.Term, st.CurrentTerm)
-		state = common.Follower
-		st.CurrentTerm = p.Term
-		st.VotedFor = ""
-		st.WriteNVState()
-	}
-	electiontimer.Reset()
-
-	// TODO: handle log consistency and synchronization here...
-
-	return nil
-}
 
 type RVParams struct {
 	Term         int
@@ -48,7 +20,103 @@ type RVResp struct {
 	VoteGranted bool
 }
 
+// TODO: struct members don't need to be exported if we're keeping in the server.go main package
+type AEParams struct {
+	Term         int
+	LeaderID     string
+	LeaderCommit int
+	PrevLogIndex int
+	PrevLogTerm  int
+	Entries      []raftnv.RaftLogEntry // will be packaged into RaftLogEntry structs when appended to log
+}
+
+type AEResp struct {
+	Term    int
+	Success bool
+}
+
+func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
+	log.Printf("AppendEntries RPC received in term %d from leader %v\n", p.Term, p.LeaderID)
+	defer electiontimer.Reset() // reset election timer whenever AppendEntries RPC is received
+
+	// by default report failure
+	resp.Success = false
+
+	// update LeaderID so we can redirect any client requests
+	currentTermLeader = p.LeaderID
+
+	// reply false if leader term is behind our current term (per Fig 2)
+	// leader needs to step down
+	if p.Term < st.GetCurrentTerm() {
+		log.Printf("Leader term %v is behind our current term %v, rejecting AppendEntries RPC\n", p.Term, st.GetCurrentTerm())
+		return nil
+	}
+
+	// update term as needed
+	// if we're behind we should stop trying to win an election (and importantly incrementing the term to do so)
+	// but in all cases proceed to check log consistency
+	if p.Term > st.GetCurrentTerm() {
+		log.Printf("Learned from server %v that we're actually in term %v (not %v)\n", p.LeaderID, p.Term, st.GetCurrentTerm())
+		state = common.Follower
+		st.SetCurrentTerm(p.Term)
+		st.SetVotedFor("")
+		st.WriteNVState()
+	}
+
+	// now that we're in the correct term, add to our response
+	resp.Term = st.GetCurrentTerm()
+
+	// deal with heartbeat case
+	if len(p.Entries) == 0 {
+		resp.Success = true
+		log.Printf("Responding TRUE to heartbeat\n")
+		return nil
+	}
+
+	// reply false if log isn't long enough to contain an entry at PrevLogIndex
+	if p.PrevLogIndex > st.LogLength() {
+		log.Printf("Log length %v is shorter than PrevLogIndex %v, rejecting AppendEntries\n", st.LogLength(), p.PrevLogIndex)
+		return nil
+	}
+
+	// reply false if log doesn't contain an entry at PrevLogIndex whose term matches PrevLogTerm
+	// skip this check if PrevLogIndex is 0 (meaning empty log)
+	if p.PrevLogIndex > 0 {
+		prevLogEntry, err := st.GetLogEntry(p.PrevLogIndex)
+		if err != nil {
+			log.Printf("Error getting log entry %v, rejecting AppendEntries\n", p.PrevLogIndex)
+			return nil
+		}
+		if prevLogEntry.Term != p.PrevLogTerm {
+			log.Printf("PrevLogIndex %v has term %v, but leader PrevLogTerm is %v, rejecting AppendEntries\n", p.PrevLogIndex, prevLogEntry.Term, p.PrevLogTerm)
+			return nil
+		}
+	}
+
+	// if an existing entry conflicts with a new one (same index but different terms), delete the existing entry and all that follow it
+	// TODO: we're just going to append all entries from PrevLogIndex+1 onwards for simplicity
+	st.PruneLog(p.PrevLogIndex + 1)
+
+	// append any new entries not already in the log
+	// TODO: any errors to handle here?
+	for _, entry := range p.Entries {
+		st.AppendLogEntry(entry.Term, entry.Value)
+		log.Printf("Appended new log entry from leader: (%v,%v)\n", entry.Term, entry.Value)
+	}
+
+	// if LeaderCommit > commitIdx, set commitIdx = min(LeaderCommit, index of last new entry)
+	if p.LeaderCommit > commitIdx {
+		commitIdx = min(p.LeaderCommit, st.LogLength())
+	}
+
+	// if we haven't rejected the RPC yet then we should exit here reporting success
+	log.Printf("AppendEntries RPC from leader %v succeeded.\n", p.LeaderID)
+	resp.Success = true
+	return nil
+}
+
 func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
+
 	log.Printf("Server %s requested a vote for term %v\n", p.CandidateId, p.Term)
 
 	if st.CurrentTerm < p.Term {

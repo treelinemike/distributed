@@ -125,17 +125,23 @@ func (nvs *NVState) ReadNVState() error {
 func (nvs *NVState) WriteNVState() error {
 
 	log.Println("Writing nvstate to file...")
-	outfile, _ := os.OpenFile(nvs.jsonFilename, os.O_CREATE, os.ModePerm)
+	outfile, err := os.OpenFile(nvs.jsonFilename, os.O_CREATE, os.ModePerm)
+	if err != nil {
+		return err
+	}
 	defer outfile.Close()
 	encoder := json.NewEncoder(outfile)
 	encoder.SetIndent("", "  ")
-	encoder.Encode(nvs)
+	err = encoder.Encode(nvs)
+	if err != nil {
+		return err
+	}
 
 	// done
 	return nil
 }
 
-func (nvs *NVState) AppendLogEntry(term int, value string) {
+func (nvs *NVState) AppendLogEntry(term int, value string) error {
 	entry := RaftLogEntry{
 		Term:  term,
 		Value: value,
@@ -143,12 +149,31 @@ func (nvs *NVState) AppendLogEntry(term int, value string) {
 	nvs.lock.Lock()
 	defer nvs.lock.Unlock()
 	nvs.Log = append(nvs.Log, entry)
-	nvs.WriteNVState()
+	err := nvs.WriteNVState()
+	return err
 }
 
-func (nvs *NVState) GetLogTerm(index int) int {
+func (nvs *NVState) GetLogEntry(index int) (RaftLogEntry, error) {
 	if index < 1 || index > len(nvs.Log) {
-		return -1
+		return RaftLogEntry{}, errors.New("Index out of bounds")
 	}
-	return nvs.Log[index-1].Term
+	return nvs.Log[index-1], nil
+}
+
+func (nvs *NVState) GetLogEntryTerm(index int) (int, error) {
+	if index < 1 || index > len(nvs.Log) {
+		return 0, errors.New("Index out of bounds")
+	}
+	return nvs.Log[index-1].Term, nil
+}
+
+func (nvs *NVState) PruneLog(index int) error {
+	if index < 1 || index > len(nvs.Log) {
+		return errors.New("Index out of bounds")
+	}
+	nvs.lock.Lock()
+	defer nvs.lock.Unlock()
+	nvs.Log = nvs.Log[:index]
+	err := nvs.WriteNVState()
+	return err
 }
