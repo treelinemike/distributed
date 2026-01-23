@@ -66,6 +66,13 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
 	// now that we're in the correct term, add to our response
 	resp.Term = st.GetCurrentTerm()
 
+	// if LeaderCommit > commitIdx, set commitIdx = min(LeaderCommit, index of last new entry)
+	// needs to happen before heartbeat case is handled because heartbeat will just return
+	if p.LeaderCommit > commitIdx {
+		log.Printf("LeaderCommit %v is greater than our commitIdx %v, updating commitIdx\n", p.LeaderCommit, commitIdx)
+		commitIdx = min(p.LeaderCommit, st.LogLength())
+	}
+
 	// deal with heartbeat case
 	if len(p.Entries) == 0 {
 		resp.Success = true
@@ -102,11 +109,6 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
 	for _, entry := range p.Entries {
 		st.AppendLogEntry(entry.Term, entry.Value)
 		log.Printf("Appended new log entry from leader: (%v,%v)\n", entry.Term, entry.Value)
-	}
-
-	// if LeaderCommit > commitIdx, set commitIdx = min(LeaderCommit, index of last new entry)
-	if p.LeaderCommit > commitIdx {
-		commitIdx = min(p.LeaderCommit, st.LogLength())
 	}
 
 	// if we haven't rejected the RPC yet then we should exit here reporting success

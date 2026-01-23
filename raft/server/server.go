@@ -460,12 +460,13 @@ func main() {
 					}
 				}
 				// if majority of servers have this log entry, commit it
-				if count > len(servers)/2 {
+				// note: we include ourselves (the leader) in the count here
+				if (count + 1) > (len(servers)+1)/2 {
 					entr, err := st.GetLogEntry(i)
 					if err != nil {
 						log.Panicf("Error getting log entry %v to commit: %v\n", i, err)
 					}
-					log.Printf("Committing log entry at index %v ('%v'))\n", i, entr.Value)
+					log.Printf("Committing log entry at index %v ('%v')\n", i, entr.Value)
 					commitIdx = i
 				}
 			}
