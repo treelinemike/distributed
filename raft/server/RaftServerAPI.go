@@ -69,8 +69,9 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
 	// if LeaderCommit > commitIdx, set commitIdx = min(LeaderCommit, index of last new entry)
 	// needs to happen before heartbeat case is handled because heartbeat will just return
 	if p.LeaderCommit > commitIdx {
-		log.Printf("LeaderCommit %v is greater than our commitIdx %v, updating commitIdx\n", p.LeaderCommit, commitIdx)
-		commitIdx = min(p.LeaderCommit, st.LogLength())
+		newCommitIdx := min(p.LeaderCommit, st.LogLength())
+		log.Printf("LeaderCommit %v is greater than our commitIdx %v, updating our commitIdx to %v\n", p.LeaderCommit, commitIdx, newCommitIdx)
+		commitIdx = newCommitIdx
 	}
 
 	// deal with heartbeat case

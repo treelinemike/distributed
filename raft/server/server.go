@@ -440,9 +440,9 @@ func main() {
 						// success case, increment nextIdx and matchIdx for that server
 						log.Printf("AppendEntries RPC to server %s succeeded.\n", svr)
 						if len(aeparam.Entries) > 0 {
-							log.Printf("Incrementing nextIdx from %v to %v and matchIdx from %v to %v\n", nextIdx[svr], nextIdx[svr]+len(aeparam.Entries), matchIdx[svr], matchIdx[svr]+len(aeparam.Entries))
+							log.Printf("Incrementing nextIdx from %v to %v and matchIdx from %v to %v\n", nextIdx[svr], nextIdx[svr]+len(aeparam.Entries), matchIdx[svr], nextIdx[svr]+len(aeparam.Entries)-1)
 							nextIdx[svr] += len(aeparam.Entries)
-							matchIdx[svr] += len(aeparam.Entries) // TODO THIS ISN'T WORKING QUITE RIGHT
+							matchIdx[svr] = nextIdx[svr] - 1 // TODO: check this logic, not clear in Raft paper?
 						}
 					}
 
