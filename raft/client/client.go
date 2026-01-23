@@ -237,7 +237,8 @@ func main() {
 				err := servers[svrChoice].Handle.Call("RaftAPI.IsFullyCommitted", 0, &commitReply)
 				if err != nil {
 					log.Printf("Error checking commit status from server %v: %v\n", svrChoice, err)
-					return
+					break // will have to try again
+					// TODO: if server goes down between commit and this check we will end up double-committing word
 				}
 				if commitReply {
 					log.Printf("Word %v committed via leader (server %v)\n", thisWord, svrChoice)
@@ -254,7 +255,7 @@ func main() {
 				}
 				writer.Flush()
 			} else {
-				log.Fatalf("Word '%v' not yet committed according to server %v\n", thisWord, svrChoice)
+				log.Printf("Word '%v' NOT yet confirmed committed by server %v, resubmitting...\n", thisWord, svrChoice)
 			}
 
 		}
