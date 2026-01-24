@@ -1,4 +1,4 @@
-package common
+package raftcommon
 
 // state of raft server
 type RaftState int

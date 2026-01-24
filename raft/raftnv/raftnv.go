@@ -108,12 +108,9 @@ func (nvs *NVState) ReadNVState() error {
 	} else {
 
 		// JSON FILE DOES NOT EXIST
+		// we don't really need to do anything here since the default zero values are fine
 		log.Println("File ", nvs.jsonFilename, " does not exist, so setting nvstate elements to default initial values...")
 
-		// we don't really need to do anything here since the zero values are fine
-		//st.Term = 0
-		//st.LeaderID = ""
-		//st.Log = append(st.Log, "first command", "second command")
 	}
 
 	// done
@@ -121,7 +118,7 @@ func (nvs *NVState) ReadNVState() error {
 
 }
 
-// now create an object and write to a json file
+// write state to non-volatile storage (json file)
 func (nvs *NVState) WriteNVState() error {
 
 	log.Println("Writing nvstate to file...")

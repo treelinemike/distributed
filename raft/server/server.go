@@ -1,7 +1,7 @@
 package main
 
 import (
-	"engg415/raft/common"
+	"engg415/raft/raftcommon"
 	"engg415/raft/raftnv"
 	"fmt"
 	"io"
@@ -24,9 +24,9 @@ var currentTermLeader string = ""
 var commitIdx int = 0
 var nextIdx map[string]int = make(map[string]int)
 var matchIdx map[string]int = make(map[string]int)
-var state common.RaftState = common.Follower
-var electiontimer common.RaftTimer
-var servers map[string]common.NetworkAddress
+var state raftcommon.RaftState = raftcommon.Follower
+var electiontimer raftcommon.RaftTimer
+var servers map[string]raftcommon.NetworkAddress
 var isactive map[string]bool
 var stopServer bool = false
 
@@ -80,14 +80,14 @@ func main() {
 	}
 	filename := os.Args[1]
 	selfkey := os.Args[2]
-	servers = make(map[string]common.NetworkAddress)
+	servers = make(map[string]raftcommon.NetworkAddress)
 	isactive = make(map[string]bool)
 
 	// load config
 	log.Println("Loading cluster configuration file")
 	var jsonfilebase string
-	var t common.Timeout
-	common.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
+	var t raftcommon.Timeout
+	raftcommon.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
 
 	// create an election timer
 	log.Printf("Config specifies election timeout range [%d, %d]\n", t.Min_ms, t.Max_ms)
@@ -192,17 +192,12 @@ func main() {
 
 	// by default start in follower state
 	log.Println("Starting in follower state")
-	state = common.Follower
+	state = raftcommon.Follower
 
 	for !stopServer {
 
-		// DEBUG ONLY
-		// TODO: remove this before final version
-		if st.GetCurrentTerm() > 10 {
-			log.Fatalf("Too many terms!")
-		}
-
 		// check to make sure all servers we expect to be active are still connected
+		// TODO: abstract network layer to its own module/file
 		for svr := range servers {
 			if svr != selfkey && isactive[svr] {
 				var retval int
@@ -215,13 +210,14 @@ func main() {
 			}
 		}
 
+		// handle server states (follower, candidate, leader)
 		switch state {
-		case common.Follower:
+		case raftcommon.Follower:
 			electiontimer.Reset()
 			<-electiontimer.Timer.C
-			state = common.Candidate
+			state = raftcommon.Candidate
 
-		case common.Candidate:
+		case raftcommon.Candidate:
 
 			// increment term
 			st.SetCurrentTerm(st.GetCurrentTerm() + 1)
@@ -240,7 +236,6 @@ func main() {
 			votechan := make(chan bool)
 
 			// request votes from all other servers
-			// TODO: excute these as goroutines
 			// TODO: we're not retrying any servers that don't respond here (raftscope does show retries every ~50ms)
 			for svr := range servers {
 				if svr != selfkey && isactive[svr] {
@@ -300,15 +295,15 @@ func main() {
 						done = true
 						if st.GetCurrentTerm() == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
 							log.Printf("We won the term %v election\n", st.GetCurrentTerm())
-							state = common.Leader
+							state = raftcommon.Leader
 							resetLeaderIndices()
 						} else if st.GetCurrentTerm() != electionTerm {
 							log.Printf("Term changed during election to %v, reverting to follower\n", st.GetCurrentTerm())
-							state = common.Follower
+							state = raftcommon.Follower
 							st.SetVotedFor("")
 						} else {
 							log.Printf("We did not win the term %v election\n", st.GetCurrentTerm())
-							state = common.Follower
+							state = raftcommon.Follower
 							st.SetVotedFor("")
 						}
 					}
@@ -319,14 +314,14 @@ func main() {
 					done = true
 
 					// check to see if we won...
-					// TODO: remove this once we fix the logic in the election piece with
+					// TODO: remove this once we fix the logic in the election piece (i.e. win immediately on majority)
 					if st.GetCurrentTerm() == electionTerm && float32(numVotesReceived) > float32(len(servers))/2.0 { // need a strict inequality here (true majority)
 						log.Printf("We won the term %v election but only received %v ballots\n", st.GetCurrentTerm(), numBallotsReceived)
-						state = common.Leader
+						state = raftcommon.Leader
 						resetLeaderIndices()
 					} else if st.GetCurrentTerm() != electionTerm {
 						log.Printf("Term changed during election to %v, reverting to follower\n", st.GetCurrentTerm())
-						state = common.Follower
+						state = raftcommon.Follower
 						st.SetVotedFor("")
 					}
 
@@ -344,15 +339,15 @@ func main() {
 			// close votechan
 			close(votechan)
 
-		case common.Leader:
+		case raftcommon.Leader:
 
 			// sent AppendEntries RPCs to all followers
 			for svr := range servers {
 				if svr != selfkey && !isactive[svr] {
-					log.Printf("NOT sending term %v heartbeat to sever %v which is apparently offline\n", st.CurrentTerm, svr)
+					log.Printf("NOT sending term %v AppendEntries to offline server %v\n", st.CurrentTerm, svr)
 				}
 				if svr != selfkey && isactive[svr] {
-					log.Printf("Sending term %v AERPC to server %s\n", st.CurrentTerm, svr)
+					log.Printf("Sending term %v AppendEntries to server %s\n", st.CurrentTerm, svr)
 
 					// prepare parameters for calling append entries RPC
 					var aeresp AEResp
@@ -405,13 +400,13 @@ func main() {
 					} else {
 
 						// that SHOULD be all of our cases...
-						log.Panicf("Invalid nextIdx case planning AppendEntries RPC\n")
+						log.Panicf("Invalid nextIdx case planning AppendEntries call\n")
 					}
 
 					// SEND IT!
 					err := servers[svr].Handle.Call("RaftAPI.AppendEntries", aeparam, &aeresp)
 					if err != nil {
-						log.Printf("Error calling append entries on server %s: %v\n", svr, err)
+						log.Printf("Error calling AppendEntries on server %s: %v\n", svr, err)
 					}
 
 					// if server has been shutdown, try recommencting once per RPC attempt
@@ -424,8 +419,9 @@ func main() {
 
 					// if the follower is at a more current term we need to step down
 					if !aeresp.Success && aeresp.Term > st.GetCurrentTerm() {
-						log.Printf("Follower %s is at a more current term %v, stepping down\n", svr, aeresp.Term)
-						state = common.Follower
+						log.Printf("Follower %s term %v greater than our term %v\n", svr, aeresp.Term, st.GetCurrentTerm())
+						log.Printf("Stepping down to follower\n")
+						state = raftcommon.Follower
 						st.SetCurrentTerm(aeresp.Term)
 						st.SetVotedFor("")
 						st.WriteNVState()
@@ -434,14 +430,16 @@ func main() {
 
 					// if AppendtEntries RPC failed, decrement nextIdx for that server (will try again next time)
 					if !aeresp.Success {
-						log.Printf("AppendEntries RPC to server %s failed, decrementing nextIdx from %v to %v\n", svr, nextIdx[svr], nextIdx[svr]-1)
+						log.Printf("AppendEntries RPC to server %s FAILED\n", svr)
+						log.Printf("Decrement nextIdx %v -> %v\n", nextIdx[svr], nextIdx[svr]-1)
 						nextIdx[svr] -= 1
 					} else {
 						// success case, increment nextIdx and matchIdx for that server
-						log.Printf("AppendEntries RPC to server %s succeeded.\n", svr)
+						log.Printf("AppendEntries RPC to server %s SUCCEEDED\n", svr)
 						if len(aeparam.Entries) > 0 {
-							log.Printf("Incrementing nextIdx from %v to %v and matchIdx from %v to %v\n", nextIdx[svr], nextIdx[svr]+len(aeparam.Entries), matchIdx[svr], nextIdx[svr]+len(aeparam.Entries)-1)
+							log.Printf("Increment nextIdx %v -> %v", nextIdx[svr], nextIdx[svr]+len(aeparam.Entries))
 							nextIdx[svr] += len(aeparam.Entries)
+							log.Printf("Update matchIdx %v -> %v\n", matchIdx[svr], nextIdx[svr]+len(aeparam.Entries)-1)
 							matchIdx[svr] = nextIdx[svr] - 1 // TODO: check this logic, not clear in Raft paper?
 						}
 					}
@@ -464,9 +462,9 @@ func main() {
 				if (count + 1) > (len(servers)+1)/2 {
 					entr, err := st.GetLogEntry(i)
 					if err != nil {
-						log.Panicf("Error getting log entry %v to commit: %v\n", i, err)
+						log.Panicf("Error getting entry %v: %v\n", i, err)
 					}
-					log.Printf("Committing log entry at index %v ('%v')\n", i, entr.Value)
+					log.Printf("Committing entry at index %v [%v])\n", i, entr)
 					commitIdx = i
 				}
 			}

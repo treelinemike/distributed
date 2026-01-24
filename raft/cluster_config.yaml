@@ -1,17 +1,17 @@
 Servers:
   1: 
-    Address: 192.168.88.101
+    Address: 127.0.0.1
     Port: 1234
   2: 
-    Address: 192.168.88.102
-    Port: 1234
+    Address: 127.0.0.1
+    Port: 1235
   3: 
-    Address: 192.168.88.103
-    Port: 1234
+    Address: 127.0.0.1
+    Port: 1236
   4: 
-    Address: 192.168.88.104
-    Port: 1234
+    Address: 127.0.0.1
+    Port: 1237
 Timeout:
-  Min_ms: 150
-  Max_ms: 300
+  Min_ms: 5000   # ok to use 5000 for development, but 150 more realistic
+  Max_ms: 10000  # ok to use 10000 for development, but 300 more realistic
 NVStateFilenameBase: raftstate

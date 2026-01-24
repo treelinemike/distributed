@@ -1,7 +1,7 @@
 package main
 
 import (
-	"engg415/raft/common"
+	"engg415/raft/raftcommon"
 	"engg415/raft/raftnv"
 	"log"
 )
@@ -36,7 +36,7 @@ type AEResp struct {
 }
 
 func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
-	log.Printf("AppendEntries RPC received in term %d from leader %v\n", p.Term, p.LeaderID)
+	log.Printf("AppendEntries received in term %d from leader %v\n", p.Term, p.LeaderID)
 	defer electiontimer.Reset() // reset election timer whenever AppendEntries RPC is received
 
 	// by default report failure
@@ -48,7 +48,8 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
 	// reply false if leader term is behind our current term (per Fig 2)
 	// leader needs to step down
 	if p.Term < st.GetCurrentTerm() {
-		log.Printf("Leader term %v is behind our current term %v, rejecting AppendEntries RPC\n", p.Term, st.GetCurrentTerm())
+		log.Printf("Leader %v term %v is behind our current term %v\n", p.LeaderID, p.Term, st.GetCurrentTerm())
+		log.Printf("Responding FALSE to AppendEntries\n")
 		return nil
 	}
 
@@ -56,8 +57,8 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
 	// if we're behind we should stop trying to win an election (and importantly incrementing the term to do so)
 	// but in all cases proceed to check log consistency
 	if p.Term > st.GetCurrentTerm() {
-		log.Printf("Learned from server %v that we're actually in term %v (not %v)\n", p.LeaderID, p.Term, st.GetCurrentTerm())
-		state = common.Follower
+		log.Printf("Term update from leader %v (%v -> %v)\n", p.LeaderID, st.GetCurrentTerm(), p.Term)
+		state = raftcommon.Follower
 		st.SetCurrentTerm(p.Term)
 		st.SetVotedFor("")
 		st.WriteNVState()
@@ -70,20 +71,22 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
 	// needs to happen before heartbeat case is handled because heartbeat will just return
 	if p.LeaderCommit > commitIdx {
 		newCommitIdx := min(p.LeaderCommit, st.LogLength())
-		log.Printf("LeaderCommit %v is greater than our commitIdx %v, updating our commitIdx to %v\n", p.LeaderCommit, commitIdx, newCommitIdx)
+		log.Printf("LeaderCommit %v is greater than our commitIdx %v\n", p.LeaderCommit, commitIdx)
+		log.Printf("Updating our commitIdx to %v\n", newCommitIdx)
 		commitIdx = newCommitIdx
 	}
 
 	// deal with heartbeat case
 	if len(p.Entries) == 0 {
 		resp.Success = true
-		log.Printf("Responding TRUE to heartbeat\n")
+		log.Printf("Responding TRUE to AppendEntries (heartbeat)\n")
 		return nil
 	}
 
 	// reply false if log isn't long enough to contain an entry at PrevLogIndex
 	if p.PrevLogIndex > st.LogLength() {
-		log.Printf("Log length %v is shorter than PrevLogIndex %v, rejecting AppendEntries\n", st.LogLength(), p.PrevLogIndex)
+		log.Printf("Log length (%v) is shorter than PrevLogIndex (%v)\n", st.LogLength(), p.PrevLogIndex)
+		log.Printf("Responding FALSE to AppendEntries\n")
 		return nil
 	}
 
@@ -92,11 +95,13 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
 	if p.PrevLogIndex > 0 {
 		prevLogEntry, err := st.GetLogEntry(p.PrevLogIndex)
 		if err != nil {
-			log.Printf("Error getting log entry %v, rejecting AppendEntries\n", p.PrevLogIndex)
+			log.Printf("Error getting log entry %v\n", p.PrevLogIndex)
+			log.Printf("Responding FALSE to AppendEntries\n")
 			return nil
 		}
 		if prevLogEntry.Term != p.PrevLogTerm {
-			log.Printf("PrevLogIndex %v has term %v, but leader PrevLogTerm is %v, rejecting AppendEntries\n", p.PrevLogIndex, prevLogEntry.Term, p.PrevLogTerm)
+			log.Printf("PrevLogIndex %v has term %v, but leader PrevLogTerm is %v\n", p.PrevLogIndex, prevLogEntry.Term, p.PrevLogTerm)
+			log.Printf("Responding FALSE to AppendEntries\n")
 			return nil
 		}
 	}
@@ -109,11 +114,11 @@ func (r *RaftAPI) AppendEntries(p AEParams, resp *AEResp) error {
 	// TODO: any errors to handle here?
 	for _, entry := range p.Entries {
 		st.AppendLogEntry(entry.Term, entry.Value)
-		log.Printf("Appended new log entry from leader: (%v,%v)\n", entry.Term, entry.Value)
+		log.Printf("Appended new log entry from leader [%v]\n", entry)
 	}
 
 	// if we haven't rejected the RPC yet then we should exit here reporting success
-	log.Printf("AppendEntries RPC from leader %v succeeded.\n", p.LeaderID)
+	log.Printf("Responding TRUE to AppendEntries\n")
 	resp.Success = true
 	return nil
 }
@@ -124,7 +129,7 @@ func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 
 	if st.CurrentTerm < p.Term {
 		st.CurrentTerm = p.Term
-		state = common.Follower
+		state = raftcommon.Follower
 		st.VotedFor = p.CandidateId
 		st.WriteNVState()
 		resp.Term = st.CurrentTerm
@@ -142,7 +147,7 @@ func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 		}
 	} else {
 		resp.VoteGranted = false
-		log.Printf("Vote denied. Candidate %v term (%v) is behind current term (%v).\n", p.CandidateId, p.Term, st.CurrentTerm)
+		log.Printf("Vote denied. Candidate %v term (%v) is behind our current term (%v)\n", p.CandidateId, p.Term, st.CurrentTerm)
 	}
 
 	// reset election timer here
@@ -154,20 +159,20 @@ func (r *RaftAPI) RequestVote(p RVParams, resp *RVResp) error {
 }
 
 // RPC for clients to submit requests to be committed
-func (r *RaftAPI) ProcessClientRequest(s []string, resp *common.RespToClient) error {
+func (r *RaftAPI) ProcessClientRequest(s []string, resp *raftcommon.RespToClient) error {
 
 	// in all cases, return current leader ID
 	resp.LeaderID = currentTermLeader
 	resp.AppendedToLeader = false
 
 	// if not leader, send client back the current leader ID
-	if state != common.Leader {
-		log.Printf("Redirecting a client request to leader (%v) to commit: %v\n", currentTermLeader, s)
+	if state != raftcommon.Leader {
+		log.Printf("Client request to commit [%v] -> redirect to leader %v\n", s, currentTermLeader)
 		return nil
 	}
 
 	// if we are the leader, add to our log which will trigger replication
-	log.Printf("Processing client request to commit: %v\n", s)
+	log.Printf("Processing client request to commit [%v]\n", s)
 	for _, v := range s {
 		st.AppendLogEntry(st.CurrentTerm, v)
 	}

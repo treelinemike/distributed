@@ -1,4 +1,4 @@
-package common
+package raftcommon
 
 import (
 	"log"

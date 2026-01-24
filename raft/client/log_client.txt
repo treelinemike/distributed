@@ -1,0 +1,842 @@
+2026/01/23 22:24:00.005696 Trying to connect to all servers now...
+2026/01/23 22:24:00.010219 Connected to host 127.0.0.1:1237
+2026/01/23 22:24:00.010219 Connected to host 127.0.0.1:1234
+2026/01/23 22:24:00.010219 Connected to host 127.0.0.1:1236
+2026/01/23 22:24:00.010740 Connected to host 127.0.0.1:1235
+2026/01/23 22:24:00.011266 Connected to all servers
+2026/01/23 22:24:00.013901 Choosing word 721 of 7608: bigger
+2026/01/23 22:24:00.264858 Attempting to send to server 1
+2026/01/23 22:24:00.265883 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:24:00.516546 Attempting to send to server 4
+2026/01/23 22:24:00.523020 Checking commit status for word bigger via server 4 (attempt 1)
+2026/01/23 22:24:02.524253 Word bigger committed via leader (server 4)
+2026/01/23 22:24:03.525435 Choosing word 3497 of 7607: indicators
+2026/01/23 22:24:03.776246 Attempting to send to server 2
+2026/01/23 22:24:03.776969 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:24:04.028055 Attempting to send to server 4
+2026/01/23 22:24:04.030573 Checking commit status for word indicators via server 4 (attempt 1)
+2026/01/23 22:24:06.030746 Word indicators committed via leader (server 4)
+2026/01/23 22:24:07.031664 Choosing word 411 of 7606: arrangement
+2026/01/23 22:24:07.282143 Attempting to send to server 3
+2026/01/23 22:24:07.282774 Server 3 is not leader, redirecting to server 4
+2026/01/23 22:24:07.532899 Attempting to send to server 4
+2026/01/23 22:24:07.534445 Checking commit status for word arrangement via server 4 (attempt 1)
+2026/01/23 22:24:09.535420 Word arrangement committed via leader (server 4)
+2026/01/23 22:24:10.536556 Choosing word 6660 of 7605: supposed
+2026/01/23 22:24:10.787027 Attempting to send to server 2
+2026/01/23 22:24:10.787531 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:24:11.037735 Attempting to send to server 4
+2026/01/23 22:24:11.039962 Checking commit status for word supposed via server 4 (attempt 1)
+2026/01/23 22:24:13.040048 Word supposed committed via leader (server 4)
+2026/01/23 22:24:14.041063 Choosing word 3123 of 7604: growing
+2026/01/23 22:24:14.291331 Attempting to send to server 4
+2026/01/23 22:24:14.294207 Checking commit status for word growing via server 4 (attempt 1)
+2026/01/23 22:24:16.295063 Error checking commit status from server 4: connection is shut down
+2026/01/23 22:24:16.295063 Word 'growing' NOT yet confirmed committed by server 4, resubmitting...
+2026/01/23 22:24:16.545900 Attempting to send to server 4
+2026/01/23 22:24:16.545900 Error submitting word to server: connection is shut down
+2026/01/23 22:24:16.545900 Attempting to reconnect to server 4 (127.0.0.1:1237)
+2026/01/23 22:24:17.073952 Attempting to send to server 1
+2026/01/23 22:24:17.075887 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:24:17.699107 Attempting to send to server 2
+2026/01/23 22:24:17.699784 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:24:18.200831 Attempting to send to server 1
+2026/01/23 22:24:18.201278 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:24:19.223485 Attempting to send to server 1
+2026/01/23 22:24:19.224055 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:24:19.862914 Attempting to send to server 1
+2026/01/23 22:24:19.863913 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:24:20.500499 Attempting to send to server 3
+2026/01/23 22:24:20.501224 Server 3 is not leader, redirecting to server 4
+2026/01/23 22:24:21.469303 Attempting to send to server 3
+2026/01/23 22:24:21.469709 Server 3 is not leader, redirecting to server 4
+2026/01/23 22:24:22.224479 Attempting to send to server 1
+2026/01/23 22:24:22.225478 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:24:22.892912 Attempting to send to server 1
+2026/01/23 22:24:22.893367 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:24:24.013764 Attempting to send to server 3
+2026/01/23 22:24:24.014522 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:24:24.409128 Attempting to send to server 2
+2026/01/23 22:24:24.410485 Checking commit status for word growing via server 2 (attempt 1)
+2026/01/23 22:24:26.797996 Word growing committed via leader (server 2)
+2026/01/23 22:24:28.001470 Choosing word 2291 of 7603: electron
+2026/01/23 22:24:28.389589 Attempting to send to server 1
+2026/01/23 22:24:28.391316 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:24:28.658616 Attempting to send to server 2
+2026/01/23 22:24:28.661673 Checking commit status for word electron via server 2 (attempt 1)
+2026/01/23 22:24:30.699258 Word electron committed via leader (server 2)
+2026/01/23 22:24:31.930538 Choosing word 918 of 7602: buried
+2026/01/23 22:24:32.336459 Attempting to send to server 2
+2026/01/23 22:24:32.340044 Checking commit status for word buried via server 2 (attempt 1)
+2026/01/23 22:24:34.340908 Word buried committed via leader (server 2)
+2026/01/23 22:24:35.553957 Choosing word 828 of 7601: boxing
+2026/01/23 22:24:35.955798 Attempting to send to server 3
+2026/01/23 22:24:35.955798 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:24:36.383366 Attempting to send to server 2
+2026/01/23 22:24:36.385513 Checking commit status for word boxing via server 2 (attempt 1)
+2026/01/23 22:24:38.385946 Word boxing committed via leader (server 2)
+2026/01/23 22:24:39.386090 Choosing word 5481 of 7600: reading
+2026/01/23 22:24:40.020651 Attempting to send to server 1
+2026/01/23 22:24:40.020651 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:24:40.272492 Attempting to send to server 2
+2026/01/23 22:24:40.275157 Checking commit status for word reading via server 2 (attempt 1)
+2026/01/23 22:24:42.406105 Word reading committed via leader (server 2)
+2026/01/23 22:24:43.411156 Choosing word 4767 of 7599: pants
+2026/01/23 22:24:44.028769 Attempting to send to server 2
+2026/01/23 22:24:44.031414 Checking commit status for word pants via server 2 (attempt 1)
+2026/01/23 22:24:46.045803 Word pants committed via leader (server 2)
+2026/01/23 22:24:47.046449 Choosing word 288 of 7598: angel
+2026/01/23 22:24:47.297010 Attempting to send to server 2
+2026/01/23 22:24:47.298583 Checking commit status for word angel via server 2 (attempt 1)
+2026/01/23 22:24:49.300410 Word angel committed via leader (server 2)
+2026/01/23 22:24:50.486710 Choosing word 155 of 7597: advisor
+2026/01/23 22:24:50.916741 Attempting to send to server 2
+2026/01/23 22:24:50.919236 Checking commit status for word advisor via server 2 (attempt 1)
+2026/01/23 22:24:53.016214 Word advisor committed via leader (server 2)
+2026/01/23 22:24:54.282791 Choosing word 1271 of 7596: closure
+2026/01/23 22:24:54.568351 Attempting to send to server 3
+2026/01/23 22:24:54.569380 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:24:54.820985 Attempting to send to server 2
+2026/01/23 22:24:54.820985 Error submitting word to server: connection is shut down
+2026/01/23 22:24:54.820985 Attempting to reconnect to server 2 (127.0.0.1:1235)
+2026/01/23 22:24:56.075356 Attempting to send to server 3
+2026/01/23 22:24:56.077114 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:24:56.583263 Attempting to send to server 3
+2026/01/23 22:24:56.584517 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:24:57.337134 Attempting to send to server 1
+2026/01/23 22:24:57.338654 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:24:58.089906 Attempting to send to server 3
+2026/01/23 22:24:58.090423 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:24:58.592209 Attempting to send to server 1
+2026/01/23 22:24:58.593358 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:00.109967 Attempting to send to server 3
+2026/01/23 22:25:00.112772 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:00.865585 Attempting to send to server 1
+2026/01/23 22:25:00.867100 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:01.369022 Attempting to send to server 1
+2026/01/23 22:25:01.370800 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:01.874473 Attempting to send to server 1
+2026/01/23 22:25:01.878225 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:03.149085 Attempting to send to server 3
+2026/01/23 22:25:03.150668 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:03.655506 Attempting to send to server 3
+2026/01/23 22:25:03.658217 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:05.166228 Attempting to send to server 3
+2026/01/23 22:25:05.167766 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:05.676756 Attempting to send to server 1
+2026/01/23 22:25:05.678757 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:06.183716 Attempting to send to server 3
+2026/01/23 22:25:06.185774 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:06.939782 Attempting to send to server 1
+2026/01/23 22:25:06.941315 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:07.958749 Attempting to send to server 1
+2026/01/23 22:25:07.960792 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:08.464958 Attempting to send to server 3
+2026/01/23 22:25:08.466937 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:08.969620 Attempting to send to server 3
+2026/01/23 22:25:08.971015 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:09.490069 Attempting to send to server 3
+2026/01/23 22:25:09.491578 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:10.264823 Attempting to send to server 1
+2026/01/23 22:25:10.265331 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:11.035045 Attempting to send to server 3
+2026/01/23 22:25:11.037800 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:11.538786 Attempting to send to server 1
+2026/01/23 22:25:11.540983 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:12.058313 Attempting to send to server 3
+2026/01/23 22:25:12.060341 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:13.074703 Attempting to send to server 3
+2026/01/23 22:25:13.077252 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:13.829838 Attempting to send to server 3
+2026/01/23 22:25:13.831365 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:14.335715 Attempting to send to server 1
+2026/01/23 22:25:14.336861 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:15.109521 Attempting to send to server 3
+2026/01/23 22:25:15.110571 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:15.888107 Attempting to send to server 3
+2026/01/23 22:25:15.909766 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:16.420944 Attempting to send to server 1
+2026/01/23 22:25:16.421990 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:17.172836 Attempting to send to server 3
+2026/01/23 22:25:17.175655 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:17.937455 Attempting to send to server 1
+2026/01/23 22:25:17.938493 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:18.702213 Attempting to send to server 1
+2026/01/23 22:25:18.703737 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:19.241227 Attempting to send to server 3
+2026/01/23 22:25:19.242688 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:19.994412 Attempting to send to server 1
+2026/01/23 22:25:19.995821 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:21.053757 Attempting to send to server 1
+2026/01/23 22:25:21.055756 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:21.565290 Attempting to send to server 1
+2026/01/23 22:25:21.568317 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:21.617234 Reconnected to server 2 (127.0.0.1:1235)
+2026/01/23 22:25:22.443274 Attempting to send to server 2
+2026/01/23 22:25:22.446328 Server 2 is not leader, redirecting to server 
+2026/01/23 22:25:23.714014 Attempting to send to server 1
+2026/01/23 22:25:23.716777 Server 1 is not leader, redirecting to server 2
+2026/01/23 22:25:23.971025 Attempting to send to server 2
+2026/01/23 22:25:23.973508 Server 2 is not leader, redirecting to server 
+2026/01/23 22:25:24.024062 Reconnected to server 4 (127.0.0.1:1237)
+2026/01/23 22:25:24.224893 Attempting to send to server 4
+2026/01/23 22:25:24.225506 Server 4 is not leader, redirecting to server 
+2026/01/23 22:25:24.475679 Attempting to send to server 3
+2026/01/23 22:25:24.476922 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:24.727010 Attempting to send to server 2
+2026/01/23 22:25:24.727700 Server 2 is not leader, redirecting to server 
+2026/01/23 22:25:24.978648 Attempting to send to server 2
+2026/01/23 22:25:24.979178 Server 2 is not leader, redirecting to server 
+2026/01/23 22:25:25.230162 Attempting to send to server 3
+2026/01/23 22:25:25.230888 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:25.481008 Attempting to send to server 2
+2026/01/23 22:25:25.482313 Server 2 is not leader, redirecting to server 
+2026/01/23 22:25:25.732396 Attempting to send to server 3
+2026/01/23 22:25:25.733167 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:25:25.983636 Attempting to send to server 2
+2026/01/23 22:25:25.984355 Server 2 is not leader, redirecting to server 
+2026/01/23 22:25:26.235069 Attempting to send to server 2
+2026/01/23 22:25:26.236336 Server 2 is not leader, redirecting to server 
+2026/01/23 22:25:26.486574 Attempting to send to server 3
+2026/01/23 22:25:26.487159 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:25:26.737289 Attempting to send to server 1
+2026/01/23 22:25:26.740705 Checking commit status for word closure via server 1 (attempt 1)
+2026/01/23 22:25:28.741724 Word closure committed via leader (server 1)
+2026/01/23 22:25:29.742691 Choosing word 4610 of 7595: often
+2026/01/23 22:25:29.993376 Attempting to send to server 3
+2026/01/23 22:25:29.993880 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:25:30.244316 Attempting to send to server 1
+2026/01/23 22:25:30.248174 Checking commit status for word often via server 1 (attempt 1)
+2026/01/23 22:25:32.248565 Word often committed via leader (server 1)
+2026/01/23 22:25:33.249592 Choosing word 4511 of 7594: normally
+2026/01/23 22:25:33.500322 Attempting to send to server 4
+2026/01/23 22:25:33.500891 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:25:33.751257 Attempting to send to server 1
+2026/01/23 22:25:33.755129 Checking commit status for word normally via server 1 (attempt 1)
+2026/01/23 22:25:35.755804 Word normally committed via leader (server 1)
+2026/01/23 22:25:36.756347 Choosing word 1121 of 7593: chapter
+2026/01/23 22:25:37.006686 Attempting to send to server 1
+2026/01/23 22:25:37.008622 Checking commit status for word chapter via server 1 (attempt 1)
+2026/01/23 22:25:39.008701 Word chapter committed via leader (server 1)
+2026/01/23 22:25:40.009469 Choosing word 4586 of 7592: ocean
+2026/01/23 22:25:40.260133 Attempting to send to server 3
+2026/01/23 22:25:40.260748 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:25:40.511192 Attempting to send to server 1
+2026/01/23 22:25:40.513374 Checking commit status for word ocean via server 1 (attempt 1)
+2026/01/23 22:25:42.513602 Word ocean committed via leader (server 1)
+2026/01/23 22:25:43.514196 Choosing word 888 of 7591: bubble
+2026/01/23 22:25:43.764737 Attempting to send to server 4
+2026/01/23 22:25:43.765335 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:25:44.015923 Attempting to send to server 1
+2026/01/23 22:25:44.018139 Checking commit status for word bubble via server 1 (attempt 1)
+2026/01/23 22:25:46.018175 Word bubble committed via leader (server 1)
+2026/01/23 22:25:47.018900 Choosing word 2062 of 7590: disease
+2026/01/23 22:25:47.268985 Attempting to send to server 3
+2026/01/23 22:25:47.270612 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:25:47.520990 Attempting to send to server 1
+2026/01/23 22:25:47.522718 Checking commit status for word disease via server 1 (attempt 1)
+2026/01/23 22:25:49.523750 Word disease committed via leader (server 1)
+2026/01/23 22:25:50.524657 Choosing word 3666 of 7589: involves
+2026/01/23 22:25:50.775280 Attempting to send to server 2
+2026/01/23 22:25:50.775860 Server 2 is not leader, redirecting to server 1
+2026/01/23 22:25:51.027096 Attempting to send to server 1
+2026/01/23 22:25:51.030791 Checking commit status for word involves via server 1 (attempt 1)
+2026/01/23 22:25:53.030925 Word involves committed via leader (server 1)
+2026/01/23 22:25:54.032063 Choosing word 677 of 7588: believed
+2026/01/23 22:25:54.283071 Attempting to send to server 1
+2026/01/23 22:25:54.285343 Checking commit status for word believed via server 1 (attempt 1)
+2026/01/23 22:25:56.285545 Word believed committed via leader (server 1)
+2026/01/23 22:25:57.286918 Choosing word 3015 of 7587: girl
+2026/01/23 22:25:57.537227 Attempting to send to server 3
+2026/01/23 22:25:57.538340 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:25:57.788817 Attempting to send to server 1
+2026/01/23 22:25:57.790977 Checking commit status for word girl via server 1 (attempt 1)
+2026/01/23 22:25:59.791615 Word girl committed via leader (server 1)
+2026/01/23 22:26:00.792374 Choosing word 7362 of 7586: warm
+2026/01/23 22:26:01.042901 Attempting to send to server 2
+2026/01/23 22:26:01.043531 Server 2 is not leader, redirecting to server 1
+2026/01/23 22:26:01.294257 Attempting to send to server 1
+2026/01/23 22:26:01.296383 Checking commit status for word warm via server 1 (attempt 1)
+2026/01/23 22:26:03.296571 Word warm committed via leader (server 1)
+2026/01/23 22:26:04.297351 Choosing word 5525 of 7585: recovered
+2026/01/23 22:26:04.548063 Attempting to send to server 3
+2026/01/23 22:26:04.548567 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:26:04.799119 Attempting to send to server 1
+2026/01/23 22:26:04.800870 Checking commit status for word recovered via server 1 (attempt 1)
+2026/01/23 22:26:06.801486 Word recovered committed via leader (server 1)
+2026/01/23 22:26:07.802105 Choosing word 3092 of 7584: greatly
+2026/01/23 22:26:08.052808 Attempting to send to server 2
+2026/01/23 22:26:08.053311 Server 2 is not leader, redirecting to server 1
+2026/01/23 22:26:08.304162 Attempting to send to server 1
+2026/01/23 22:26:08.306341 Checking commit status for word greatly via server 1 (attempt 1)
+2026/01/23 22:26:10.306772 Word greatly committed via leader (server 1)
+2026/01/23 22:26:11.307863 Choosing word 840 of 7583: bread
+2026/01/23 22:26:11.558550 Attempting to send to server 1
+2026/01/23 22:26:11.560913 Checking commit status for word bread via server 1 (attempt 1)
+2026/01/23 22:26:13.561486 Word bread committed via leader (server 1)
+2026/01/23 22:26:14.562713 Choosing word 5972 of 7582: scientists
+2026/01/23 22:26:14.813206 Attempting to send to server 2
+2026/01/23 22:26:14.814373 Server 2 is not leader, redirecting to server 1
+2026/01/23 22:26:15.065508 Attempting to send to server 1
+2026/01/23 22:26:15.067356 Checking commit status for word scientists via server 1 (attempt 1)
+2026/01/23 22:26:17.067654 Word scientists committed via leader (server 1)
+2026/01/23 22:26:18.068830 Choosing word 5604 of 7581: relax
+2026/01/23 22:26:18.319589 Attempting to send to server 1
+2026/01/23 22:26:18.322301 Checking commit status for word relax via server 1 (attempt 1)
+2026/01/23 22:26:20.323589 Word relax committed via leader (server 1)
+2026/01/23 22:26:21.324529 Choosing word 1591 of 7580: conventions
+2026/01/23 22:26:21.575310 Attempting to send to server 2
+2026/01/23 22:26:21.575815 Server 2 is not leader, redirecting to server 1
+2026/01/23 22:26:21.826283 Attempting to send to server 1
+2026/01/23 22:26:21.828163 Checking commit status for word conventions via server 1 (attempt 1)
+2026/01/23 22:26:23.828252 Word conventions committed via leader (server 1)
+2026/01/23 22:26:24.829150 Choosing word 3033 of 7579: goal
+2026/01/23 22:26:25.079990 Attempting to send to server 4
+2026/01/23 22:26:25.080630 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:26:25.330855 Attempting to send to server 1
+2026/01/23 22:26:25.332602 Checking commit status for word goal via server 1 (attempt 1)
+2026/01/23 22:26:27.333109 Word goal committed via leader (server 1)
+2026/01/23 22:26:28.334068 Choosing word 4529 of 7578: null
+2026/01/23 22:26:28.584458 Attempting to send to server 1
+2026/01/23 22:26:28.586634 Checking commit status for word null via server 1 (attempt 1)
+2026/01/23 22:26:30.586900 Word null committed via leader (server 1)
+2026/01/23 22:26:31.587578 Choosing word 977 of 7577: campus
+2026/01/23 22:26:31.838348 Attempting to send to server 2
+2026/01/23 22:26:31.838962 Server 2 is not leader, redirecting to server 1
+2026/01/23 22:26:32.089251 Attempting to send to server 1
+2026/01/23 22:26:32.092380 Checking commit status for word campus via server 1 (attempt 1)
+2026/01/23 22:26:34.093010 Word campus committed via leader (server 1)
+2026/01/23 22:26:35.093852 Choosing word 4180 of 7576: media
+2026/01/23 22:26:35.344115 Attempting to send to server 4
+2026/01/23 22:26:35.344738 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:26:35.595187 Attempting to send to server 1
+2026/01/23 22:26:35.596791 Checking commit status for word media via server 1 (attempt 1)
+2026/01/23 22:26:37.597469 Word media committed via leader (server 1)
+2026/01/23 22:26:38.598626 Choosing word 6238 of 7575: sleep
+2026/01/23 22:26:38.849098 Attempting to send to server 2
+2026/01/23 22:26:38.849700 Server 2 is not leader, redirecting to server 1
+2026/01/23 22:26:39.100087 Attempting to send to server 1
+2026/01/23 22:26:39.102244 Checking commit status for word sleep via server 1 (attempt 1)
+2026/01/23 22:26:41.102538 Word sleep committed via leader (server 1)
+2026/01/23 22:26:42.103796 Choosing word 2971 of 7574: gender
+2026/01/23 22:26:42.354227 Attempting to send to server 1
+2026/01/23 22:26:42.355877 Checking commit status for word gender via server 1 (attempt 1)
+2026/01/23 22:26:44.356376 Word gender committed via leader (server 1)
+2026/01/23 22:26:45.357148 Choosing word 1252 of 7573: clinical
+2026/01/23 22:26:45.607575 Attempting to send to server 3
+2026/01/23 22:26:45.608189 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:26:45.858952 Attempting to send to server 1
+2026/01/23 22:26:45.861474 Checking commit status for word clinical via server 1 (attempt 1)
+2026/01/23 22:26:47.862341 Word clinical committed via leader (server 1)
+2026/01/23 22:26:48.863778 Choosing word 5752 of 7572: retail
+2026/01/23 22:26:49.114373 Attempting to send to server 3
+2026/01/23 22:26:49.114979 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:26:49.365291 Attempting to send to server 1
+2026/01/23 22:26:49.368659 Checking commit status for word retail via server 1 (attempt 1)
+2026/01/23 22:26:51.369581 Word retail committed via leader (server 1)
+2026/01/23 22:26:52.370089 Choosing word 6848 of 7571: this
+2026/01/23 22:26:52.620996 Attempting to send to server 3
+2026/01/23 22:26:52.622659 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:26:52.872933 Attempting to send to server 1
+2026/01/23 22:26:52.875166 Checking commit status for word this via server 1 (attempt 1)
+2026/01/23 22:26:54.875464 Word this committed via leader (server 1)
+2026/01/23 22:26:55.876416 Choosing word 4210 of 7570: merchants
+2026/01/23 22:26:56.127274 Attempting to send to server 4
+2026/01/23 22:26:56.128445 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:26:56.378681 Attempting to send to server 1
+2026/01/23 22:26:56.380780 Checking commit status for word merchants via server 1 (attempt 1)
+2026/01/23 22:26:58.381050 Word merchants committed via leader (server 1)
+2026/01/23 22:26:59.381936 Choosing word 5761 of 7569: retrieved
+2026/01/23 22:26:59.632268 Attempting to send to server 4
+2026/01/23 22:26:59.632772 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:26:59.883998 Attempting to send to server 1
+2026/01/23 22:26:59.883998 Error submitting word to server: connection is shut down
+2026/01/23 22:26:59.883998 Attempting to reconnect to server 1 (127.0.0.1:1234)
+2026/01/23 22:27:00.134373 Attempting to send to server 2
+2026/01/23 22:27:00.135081 Server 2 is not leader, redirecting to server 1
+2026/01/23 22:27:00.694580 Attempting to send to server 4
+2026/01/23 22:27:00.695588 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:27:01.357780 Attempting to send to server 4
+2026/01/23 22:27:01.358296 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:27:01.893482 Attempting to send to server 3
+2026/01/23 22:27:01.894285 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:27:02.766770 Attempting to send to server 4
+2026/01/23 22:27:02.767685 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:27:03.439106 Attempting to send to server 2
+2026/01/23 22:27:03.439512 Server 2 is not leader, redirecting to server 1
+2026/01/23 22:27:04.658684 Attempting to send to server 3
+2026/01/23 22:27:04.659850 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:27:05.176889 Attempting to send to server 3
+2026/01/23 22:27:05.178397 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:27:05.970125 Attempting to send to server 4
+2026/01/23 22:27:05.971724 Server 4 is not leader, redirecting to server 1
+2026/01/23 22:27:06.512732 Attempting to send to server 3
+2026/01/23 22:27:06.513731 Server 3 is not leader, redirecting to server 1
+2026/01/23 22:27:07.132818 Attempting to send to server 3
+2026/01/23 22:27:07.133735 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:07.574734 Attempting to send to server 2
+2026/01/23 22:27:07.577736 Checking commit status for word retrieved via server 2 (attempt 1)
+2026/01/23 22:27:09.715387 Word retrieved committed via leader (server 2)
+2026/01/23 22:27:10.715569 Choosing word 27 of 7568: accessibility
+2026/01/23 22:27:10.965896 Attempting to send to server 4
+2026/01/23 22:27:10.966416 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:11.375005 Attempting to send to server 2
+2026/01/23 22:27:11.381086 Checking commit status for word accessibility via server 2 (attempt 1)
+2026/01/23 22:27:13.624099 Word accessibility committed via leader (server 2)
+2026/01/23 22:27:14.624641 Choosing word 42 of 7567: accordingly
+2026/01/23 22:27:15.775397 Attempting to send to server 4
+2026/01/23 22:27:15.776114 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:16.027426 Attempting to send to server 2
+2026/01/23 22:27:16.030425 Checking commit status for word accordingly via server 2 (attempt 1)
+2026/01/23 22:27:18.306300 Word accordingly committed via leader (server 2)
+2026/01/23 22:27:19.538656 Choosing word 2252 of 7566: effective
+2026/01/23 22:27:19.985698 Attempting to send to server 4
+2026/01/23 22:27:19.987275 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:20.271998 Attempting to send to server 2
+2026/01/23 22:27:20.274187 Checking commit status for word effective via server 2 (attempt 1)
+2026/01/23 22:27:22.306613 Word effective committed via leader (server 2)
+2026/01/23 22:27:23.307945 Choosing word 2789 of 7565: flying
+2026/01/23 22:27:23.710776 Attempting to send to server 2
+2026/01/23 22:27:23.713784 Checking commit status for word flying via server 2 (attempt 1)
+2026/01/23 22:27:26.017242 Word flying committed via leader (server 2)
+2026/01/23 22:27:27.096093 Choosing word 5103 of 7564: prayer
+2026/01/23 22:27:27.373424 Attempting to send to server 3
+2026/01/23 22:27:27.374426 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:27.625113 Attempting to send to server 2
+2026/01/23 22:27:27.625113 Error submitting word to server: connection is shut down
+2026/01/23 22:27:27.625113 Attempting to reconnect to server 2 (127.0.0.1:1235)
+2026/01/23 22:27:27.875724 Attempting to send to server 3
+2026/01/23 22:27:27.876866 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:28.628261 Attempting to send to server 4
+2026/01/23 22:27:28.629346 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:29.132556 Attempting to send to server 3
+2026/01/23 22:27:29.133368 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:29.885510 Attempting to send to server 4
+2026/01/23 22:27:29.886017 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:30.387586 Attempting to send to server 3
+2026/01/23 22:27:30.388657 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:31.144914 Attempting to send to server 4
+2026/01/23 22:27:31.145435 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:32.648353 Attempting to send to server 4
+2026/01/23 22:27:32.651185 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:33.152782 Attempting to send to server 4
+2026/01/23 22:27:33.154810 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:33.657165 Attempting to send to server 4
+2026/01/23 22:27:33.662104 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:34.165437 Attempting to send to server 4
+2026/01/23 22:27:34.168143 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:34.922141 Attempting to send to server 3
+2026/01/23 22:27:34.923476 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:35.431043 Attempting to send to server 3
+2026/01/23 22:27:35.434494 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:35.942035 Attempting to send to server 4
+2026/01/23 22:27:35.942539 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:36.445339 Attempting to send to server 3
+2026/01/23 22:27:36.447517 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:37.198721 Attempting to send to server 4
+2026/01/23 22:27:37.200843 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:37.730071 Attempting to send to server 4
+2026/01/23 22:27:37.731295 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:38.484859 Attempting to send to server 4
+2026/01/23 22:27:38.486874 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:38.990842 Attempting to send to server 3
+2026/01/23 22:27:38.993282 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:39.506153 Attempting to send to server 3
+2026/01/23 22:27:39.510264 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:40.266249 Attempting to send to server 3
+2026/01/23 22:27:40.267970 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:42.076432 Attempting to send to server 3
+2026/01/23 22:27:42.079809 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:42.856071 Attempting to send to server 4
+2026/01/23 22:27:42.857602 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:43.874711 Attempting to send to server 4
+2026/01/23 22:27:43.875747 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:44.662186 Attempting to send to server 3
+2026/01/23 22:27:44.663700 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:45.165264 Attempting to send to server 4
+2026/01/23 22:27:45.168844 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:46.929106 Attempting to send to server 4
+2026/01/23 22:27:46.930114 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:47.431034 Attempting to send to server 4
+2026/01/23 22:27:47.433178 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:47.939780 Attempting to send to server 3
+2026/01/23 22:27:47.943604 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:48.979798 Attempting to send to server 3
+2026/01/23 22:27:48.980900 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:49.992051 Attempting to send to server 3
+2026/01/23 22:27:49.993464 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:50.996789 Attempting to send to server 3
+2026/01/23 22:27:51.007526 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:52.029954 Attempting to send to server 4
+2026/01/23 22:27:52.031541 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:53.032733 Attempting to send to server 3
+2026/01/23 22:27:53.034269 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:53.550028 Attempting to send to server 3
+2026/01/23 22:27:53.550028 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:54.302181 Reconnected to server 2 (127.0.0.1:1235)
+2026/01/23 22:27:54.304223 Attempting to send to server 3
+2026/01/23 22:27:54.311457 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:54.627133 Attempting to send to server 2
+2026/01/23 22:27:54.631077 Server 2 is not leader, redirecting to server 
+2026/01/23 22:27:56.940477 Reconnected to server 1 (127.0.0.1:1234)
+2026/01/23 22:27:57.185090 Attempting to send to server 3
+2026/01/23 22:27:57.186124 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:57.436333 Attempting to send to server 2
+2026/01/23 22:27:57.436959 Server 2 is not leader, redirecting to server 
+2026/01/23 22:27:57.687704 Attempting to send to server 4
+2026/01/23 22:27:57.688365 Server 4 is not leader, redirecting to server 2
+2026/01/23 22:27:57.938437 Attempting to send to server 2
+2026/01/23 22:27:57.940239 Server 2 is not leader, redirecting to server 
+2026/01/23 22:27:58.191273 Attempting to send to server 1
+2026/01/23 22:27:58.191975 Server 1 is not leader, redirecting to server 
+2026/01/23 22:27:58.442066 Attempting to send to server 3
+2026/01/23 22:27:58.442692 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:58.692956 Attempting to send to server 2
+2026/01/23 22:27:58.694262 Server 2 is not leader, redirecting to server 
+2026/01/23 22:27:58.944594 Attempting to send to server 3
+2026/01/23 22:27:58.945318 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:59.196305 Attempting to send to server 2
+2026/01/23 22:27:59.198859 Server 2 is not leader, redirecting to server 
+2026/01/23 22:27:59.449474 Attempting to send to server 3
+2026/01/23 22:27:59.450085 Server 3 is not leader, redirecting to server 2
+2026/01/23 22:27:59.700384 Attempting to send to server 2
+2026/01/23 22:27:59.701731 Server 2 is not leader, redirecting to server 
+2026/01/23 22:27:59.952188 Attempting to send to server 4
+2026/01/23 22:27:59.952693 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:28:00.202919 Attempting to send to server 3
+2026/01/23 22:28:00.205102 Checking commit status for word prayer via server 3 (attempt 1)
+2026/01/23 22:28:02.205342 Word prayer committed via leader (server 3)
+2026/01/23 22:28:03.206520 Choosing word 2903 of 7563: fun
+2026/01/23 22:28:03.456868 Attempting to send to server 4
+2026/01/23 22:28:03.458168 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:28:03.708189 Attempting to send to server 3
+2026/01/23 22:28:03.710477 Checking commit status for word fun via server 3 (attempt 1)
+2026/01/23 22:28:05.711569 Word fun committed via leader (server 3)
+2026/01/23 22:28:06.712441 Choosing word 5462 of 7562: realtor
+2026/01/23 22:28:06.962952 Attempting to send to server 1
+2026/01/23 22:28:06.963531 Server 1 is not leader, redirecting to server 3
+2026/01/23 22:28:07.213935 Attempting to send to server 3
+2026/01/23 22:28:07.217594 Checking commit status for word realtor via server 3 (attempt 1)
+2026/01/23 22:28:09.217757 Word realtor committed via leader (server 3)
+2026/01/23 22:28:10.218643 Choosing word 2409 of 7561: escape
+2026/01/23 22:28:10.469603 Attempting to send to server 2
+2026/01/23 22:28:10.470277 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:28:10.720998 Attempting to send to server 3
+2026/01/23 22:28:10.723990 Checking commit status for word escape via server 3 (attempt 1)
+2026/01/23 22:28:12.724531 Word escape committed via leader (server 3)
+2026/01/23 22:28:13.725613 Choosing word 5735 of 7560: restrictions
+2026/01/23 22:28:13.976215 Attempting to send to server 4
+2026/01/23 22:28:13.976959 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:28:14.227023 Attempting to send to server 3
+2026/01/23 22:28:14.229885 Checking commit status for word restrictions via server 3 (attempt 1)
+2026/01/23 22:28:16.230139 Word restrictions committed via leader (server 3)
+2026/01/23 22:28:17.231435 Choosing word 3963 of 7559: loans
+2026/01/23 22:28:17.481957 Attempting to send to server 2
+2026/01/23 22:28:17.483270 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:28:17.734041 Attempting to send to server 3
+2026/01/23 22:28:17.736436 Checking commit status for word loans via server 3 (attempt 1)
+2026/01/23 22:28:19.737152 Word loans committed via leader (server 3)
+2026/01/23 22:28:20.738168 Choosing word 1088 of 7558: chain
+2026/01/23 22:28:20.988614 Attempting to send to server 4
+2026/01/23 22:28:20.989763 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:28:21.240645 Attempting to send to server 3
+2026/01/23 22:28:21.243929 Checking commit status for word chain via server 3 (attempt 1)
+2026/01/23 22:28:23.244809 Word chain committed via leader (server 3)
+2026/01/23 22:28:24.245840 Choosing word 4082 of 7557: manor
+2026/01/23 22:28:24.496565 Attempting to send to server 1
+2026/01/23 22:28:24.497230 Server 1 is not leader, redirecting to server 3
+2026/01/23 22:28:24.747268 Attempting to send to server 3
+2026/01/23 22:28:24.750635 Checking commit status for word manor via server 3 (attempt 1)
+2026/01/23 22:28:26.751005 Word manor committed via leader (server 3)
+2026/01/23 22:28:27.751631 Choosing word 339 of 7556: appearance
+2026/01/23 22:28:28.002373 Attempting to send to server 3
+2026/01/23 22:28:28.004803 Checking commit status for word appearance via server 3 (attempt 1)
+2026/01/23 22:28:30.004975 Word appearance committed via leader (server 3)
+2026/01/23 22:28:31.006044 Choosing word 2776 of 7555: flow
+2026/01/23 22:28:31.256611 Attempting to send to server 4
+2026/01/23 22:28:31.257239 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:28:31.507487 Attempting to send to server 3
+2026/01/23 22:28:31.509690 Checking commit status for word flow via server 3 (attempt 1)
+2026/01/23 22:28:33.509889 Word flow committed via leader (server 3)
+2026/01/23 22:28:34.510933 Choosing word 946 of 7554: cakes
+2026/01/23 22:28:34.761742 Attempting to send to server 4
+2026/01/23 22:28:34.762361 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:28:35.012898 Attempting to send to server 3
+2026/01/23 22:28:35.014612 Checking commit status for word cakes via server 3 (attempt 1)
+2026/01/23 22:28:37.015342 Word cakes committed via leader (server 3)
+2026/01/23 22:28:38.015884 Choosing word 2889 of 7553: front
+2026/01/23 22:28:38.266829 Attempting to send to server 1
+2026/01/23 22:28:38.267476 Server 1 is not leader, redirecting to server 3
+2026/01/23 22:28:38.518258 Attempting to send to server 3
+2026/01/23 22:28:38.519897 Checking commit status for word front via server 3 (attempt 1)
+2026/01/23 22:28:40.520999 Word front committed via leader (server 3)
+2026/01/23 22:28:41.521765 Choosing word 2605 of 7552: false
+2026/01/23 22:28:41.772631 Attempting to send to server 3
+2026/01/23 22:28:41.774285 Checking commit status for word false via server 3 (attempt 1)
+2026/01/23 22:28:43.774455 Word false committed via leader (server 3)
+2026/01/23 22:28:44.775785 Choosing word 3592 of 7551: interference
+2026/01/23 22:28:45.026590 Attempting to send to server 4
+2026/01/23 22:28:45.027729 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:28:45.278132 Attempting to send to server 3
+2026/01/23 22:28:45.282157 Checking commit status for word interference via server 3 (attempt 1)
+2026/01/23 22:28:47.282845 Word interference committed via leader (server 3)
+2026/01/23 22:28:48.284140 Choosing word 5371 of 7550: quote
+2026/01/23 22:28:48.534742 Attempting to send to server 1
+2026/01/23 22:28:48.535353 Server 1 is not leader, redirecting to server 3
+2026/01/23 22:28:48.785968 Attempting to send to server 3
+2026/01/23 22:28:48.788172 Checking commit status for word quote via server 3 (attempt 1)
+2026/01/23 22:28:50.788620 Word quote committed via leader (server 3)
+2026/01/23 22:28:51.789320 Choosing word 5768 of 7549: rhythm
+2026/01/23 22:28:52.039720 Attempting to send to server 3
+2026/01/23 22:28:52.042916 Checking commit status for word rhythm via server 3 (attempt 1)
+2026/01/23 22:28:54.046047 Word rhythm committed via leader (server 3)
+2026/01/23 22:28:55.047132 Choosing word 4140 of 7548: may
+2026/01/23 22:28:55.297718 Attempting to send to server 2
+2026/01/23 22:28:55.298365 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:28:55.548765 Attempting to send to server 3
+2026/01/23 22:28:55.551391 Checking commit status for word may via server 3 (attempt 1)
+2026/01/23 22:28:57.551830 Word may committed via leader (server 3)
+2026/01/23 22:28:58.552440 Choosing word 553 of 7547: bachelor
+2026/01/23 22:28:58.802777 Attempting to send to server 4
+2026/01/23 22:28:58.803392 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:28:59.054179 Attempting to send to server 3
+2026/01/23 22:28:59.057191 Checking commit status for word bachelor via server 3 (attempt 1)
+2026/01/23 22:29:01.058028 Word bachelor committed via leader (server 3)
+2026/01/23 22:29:02.058877 Choosing word 7399 of 7546: whether
+2026/01/23 22:29:02.309246 Attempting to send to server 3
+2026/01/23 22:29:02.311547 Checking commit status for word whether via server 3 (attempt 1)
+2026/01/23 22:29:04.312153 Word whether committed via leader (server 3)
+2026/01/23 22:29:05.313400 Choosing word 5199 of 7545: producer
+2026/01/23 22:29:05.564288 Attempting to send to server 1
+2026/01/23 22:29:05.564904 Server 1 is not leader, redirecting to server 3
+2026/01/23 22:29:05.815591 Attempting to send to server 3
+2026/01/23 22:29:05.819077 Checking commit status for word producer via server 3 (attempt 1)
+2026/01/23 22:29:07.819502 Word producer committed via leader (server 3)
+2026/01/23 22:29:08.820525 Choosing word 4748 of 7544: parking
+2026/01/23 22:29:09.071232 Attempting to send to server 2
+2026/01/23 22:29:09.072408 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:29:09.322944 Attempting to send to server 3
+2026/01/23 22:29:09.325624 Checking commit status for word parking via server 3 (attempt 1)
+2026/01/23 22:29:11.326047 Word parking committed via leader (server 3)
+2026/01/23 22:29:12.326936 Choosing word 1986 of 7543: dietary
+2026/01/23 22:29:12.578179 Attempting to send to server 2
+2026/01/23 22:29:12.579282 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:29:12.829682 Attempting to send to server 3
+2026/01/23 22:29:12.833508 Checking commit status for word dietary via server 3 (attempt 1)
+2026/01/23 22:29:14.834261 Word dietary committed via leader (server 3)
+2026/01/23 22:29:15.835249 Choosing word 4439 of 7542: neural
+2026/01/23 22:29:16.085782 Attempting to send to server 3
+2026/01/23 22:29:16.087776 Checking commit status for word neural via server 3 (attempt 1)
+2026/01/23 22:29:18.087948 Word neural committed via leader (server 3)
+2026/01/23 22:29:19.088952 Choosing word 4614 of 7541: opposition
+2026/01/23 22:29:19.339145 Attempting to send to server 2
+2026/01/23 22:29:19.339759 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:29:19.590206 Attempting to send to server 3
+2026/01/23 22:29:19.592946 Checking commit status for word opposition via server 3 (attempt 1)
+2026/01/23 22:29:21.593191 Word opposition committed via leader (server 3)
+2026/01/23 22:29:22.594059 Choosing word 6960 of 7540: trained
+2026/01/23 22:29:22.844580 Attempting to send to server 4
+2026/01/23 22:29:22.845662 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:29:23.096194 Attempting to send to server 3
+2026/01/23 22:29:23.098777 Checking commit status for word trained via server 3 (attempt 1)
+2026/01/23 22:29:25.098940 Word trained committed via leader (server 3)
+2026/01/23 22:29:26.099837 Choosing word 7080 of 7539: twist
+2026/01/23 22:29:26.350180 Attempting to send to server 2
+2026/01/23 22:29:26.350864 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:29:26.601866 Attempting to send to server 3
+2026/01/23 22:29:26.604654 Checking commit status for word twist via server 3 (attempt 1)
+2026/01/23 22:29:28.605014 Word twist committed via leader (server 3)
+2026/01/23 22:29:29.605925 Choosing word 4287 of 7538: moderate
+2026/01/23 22:29:29.856264 Attempting to send to server 4
+2026/01/23 22:29:29.857829 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:29:30.108017 Attempting to send to server 3
+2026/01/23 22:29:30.112224 Checking commit status for word moderate via server 3 (attempt 1)
+2026/01/23 22:29:32.112775 Word moderate committed via leader (server 3)
+2026/01/23 22:29:33.113766 Choosing word 540 of 7537: avoid
+2026/01/23 22:29:33.364548 Attempting to send to server 1
+2026/01/23 22:29:33.365329 Server 1 is not leader, redirecting to server 3
+2026/01/23 22:29:33.615822 Attempting to send to server 3
+2026/01/23 22:29:33.616935 Checking commit status for word avoid via server 3 (attempt 1)
+2026/01/23 22:29:35.617808 Word avoid committed via leader (server 3)
+2026/01/23 22:29:36.619207 Choosing word 594 of 7536: barrel
+2026/01/23 22:29:36.869588 Attempting to send to server 3
+2026/01/23 22:29:36.872300 Checking commit status for word barrel via server 3 (attempt 1)
+2026/01/23 22:29:38.872846 Word barrel committed via leader (server 3)
+2026/01/23 22:29:39.873875 Choosing word 4153 of 7535: mechanical
+2026/01/23 22:29:40.124740 Attempting to send to server 1
+2026/01/23 22:29:40.126110 Server 1 is not leader, redirecting to server 3
+2026/01/23 22:29:40.376381 Attempting to send to server 3
+2026/01/23 22:29:40.378576 Checking commit status for word mechanical via server 3 (attempt 1)
+2026/01/23 22:29:42.379555 Word mechanical committed via leader (server 3)
+2026/01/23 22:29:43.380449 Choosing word 598 of 7534: baseball
+2026/01/23 22:29:43.631212 Attempting to send to server 3
+2026/01/23 22:29:43.633421 Checking commit status for word baseball via server 3 (attempt 1)
+2026/01/23 22:29:45.634322 Word baseball committed via leader (server 3)
+2026/01/23 22:29:46.635415 Choosing word 4884 of 7533: photo
+2026/01/23 22:29:46.885979 Attempting to send to server 3
+2026/01/23 22:29:46.885979 Error submitting word to server: connection is shut down
+2026/01/23 22:29:46.885979 Attempting to reconnect to server 3 (127.0.0.1:1236)
+2026/01/23 22:29:47.701832 Attempting to send to server 4
+2026/01/23 22:29:47.703122 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:29:48.623236 Attempting to send to server 4
+2026/01/23 22:29:48.624173 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:29:49.445153 Attempting to send to server 4
+2026/01/23 22:29:49.446663 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:29:50.198127 Attempting to send to server 2
+2026/01/23 22:29:50.198643 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:29:51.083577 Attempting to send to server 4
+2026/01/23 22:29:51.085065 Server 4 is not leader, redirecting to server 3
+2026/01/23 22:29:51.602144 Attempting to send to server 1
+2026/01/23 22:29:51.602806 Server 1 is not leader, redirecting to server 3
+2026/01/23 22:29:52.240982 Attempting to send to server 2
+2026/01/23 22:29:52.241833 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:29:53.099114 Attempting to send to server 2
+2026/01/23 22:29:53.099961 Server 2 is not leader, redirecting to server 3
+2026/01/23 22:29:54.924723 Attempting to send to server 4
+2026/01/23 22:29:54.927764 Checking commit status for word photo via server 4 (attempt 1)
+2026/01/23 22:29:57.113472 Word photo committed via leader (server 4)
+2026/01/23 22:29:58.114663 Choosing word 6818 of 7532: thoughts
+2026/01/23 22:29:59.065547 Attempting to send to server 1
+2026/01/23 22:29:59.067242 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:29:59.653051 Attempting to send to server 4
+2026/01/23 22:29:59.657571 Checking commit status for word thoughts via server 4 (attempt 1)
+2026/01/23 22:30:01.703139 Word thoughts committed via leader (server 4)
+2026/01/23 22:30:02.919989 Choosing word 902 of 7531: bunny
+2026/01/23 22:30:03.482886 Attempting to send to server 1
+2026/01/23 22:30:03.485227 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:30:03.994234 Attempting to send to server 4
+2026/01/23 22:30:04.000006 Checking commit status for word bunny via server 4 (attempt 1)
+2026/01/23 22:30:06.076094 Word bunny committed via leader (server 4)
+2026/01/23 22:30:07.244670 Choosing word 372 of 7530: aqua
+2026/01/23 22:30:07.771971 Attempting to send to server 2
+2026/01/23 22:30:07.773669 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:30:08.347758 Attempting to send to server 4
+2026/01/23 22:30:08.351280 Checking commit status for word aqua via server 4 (attempt 1)
+2026/01/23 22:30:10.567022 Word aqua committed via leader (server 4)
+2026/01/23 22:30:11.719919 Choosing word 6376 of 7529: stand
+2026/01/23 22:30:12.946303 Attempting to send to server 1
+2026/01/23 22:30:12.947368 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:30:13.424113 Attempting to send to server 4
+2026/01/23 22:30:13.428980 Checking commit status for word stand via server 4 (attempt 1)
+2026/01/23 22:30:15.627380 Word stand committed via leader (server 4)
+2026/01/23 22:30:16.687540 Choosing word 5564 of 7528: relay
+2026/01/23 22:30:18.223600 Attempting to send to server 1
+2026/01/23 22:30:18.225089 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:30:18.715006 Attempting to send to server 4
+2026/01/23 22:30:18.718517 Checking commit status for word relay via server 4 (attempt 1)
+2026/01/23 22:30:20.796759 Word relay committed via leader (server 4)
+2026/01/23 22:30:21.856311 Choosing word 3648 of 7527: issued
+2026/01/23 22:30:22.527140 Attempting to send to server 1
+2026/01/23 22:30:22.535097 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:30:22.995500 Attempting to send to server 4
+2026/01/23 22:30:23.017649 Checking commit status for word issued via server 4 (attempt 1)
+2026/01/23 22:30:25.261900 Word issued committed via leader (server 4)
+2026/01/23 22:30:26.262737 Choosing word 3979 of 7526: looked
+2026/01/23 22:30:26.513749 Attempting to send to server 4
+2026/01/23 22:30:26.517857 Checking commit status for word looked via server 4 (attempt 1)
+2026/01/23 22:30:28.627347 Reconnected to server 3 (127.0.0.1:1236)
+2026/01/23 22:30:28.627347 Word looked committed via leader (server 4)
+2026/01/23 22:30:29.628442 Choosing word 1573 of 7525: controversy
+2026/01/23 22:30:29.879016 Attempting to send to server 1
+2026/01/23 22:30:29.879555 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:30:30.130933 Attempting to send to server 4
+2026/01/23 22:30:30.132705 Checking commit status for word controversy via server 4 (attempt 1)
+2026/01/23 22:30:32.133545 Word controversy committed via leader (server 4)
+2026/01/23 22:30:33.134545 Choosing word 4694 of 7524: pad
+2026/01/23 22:30:33.385378 Attempting to send to server 3
+2026/01/23 22:30:33.387567 Server 3 is not leader, redirecting to server 4
+2026/01/23 22:30:33.637582 Attempting to send to server 4
+2026/01/23 22:30:33.639799 Checking commit status for word pad via server 4 (attempt 1)
+2026/01/23 22:30:35.640245 Word pad committed via leader (server 4)
+2026/01/23 22:30:36.641159 Choosing word 3083 of 7523: grove
+2026/01/23 22:30:36.891663 Attempting to send to server 2
+2026/01/23 22:30:36.893049 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:30:37.143459 Attempting to send to server 4
+2026/01/23 22:30:37.146280 Checking commit status for word grove via server 4 (attempt 1)
+2026/01/23 22:30:39.147031 Word grove committed via leader (server 4)
+2026/01/23 22:30:40.147804 Choosing word 6055 of 7522: shadow
+2026/01/23 22:30:40.398484 Attempting to send to server 2
+2026/01/23 22:30:40.399164 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:30:40.649655 Attempting to send to server 4
+2026/01/23 22:30:40.651480 Checking commit status for word shadow via server 4 (attempt 1)
+2026/01/23 22:30:42.652523 Word shadow committed via leader (server 4)
+2026/01/23 22:30:43.653424 Choosing word 1807 of 7521: decade
+2026/01/23 22:30:43.904327 Attempting to send to server 3
+2026/01/23 22:30:43.905620 Server 3 is not leader, redirecting to server 4
+2026/01/23 22:30:44.155787 Attempting to send to server 4
+2026/01/23 22:30:44.158049 Checking commit status for word decade via server 4 (attempt 1)
+2026/01/23 22:30:46.159234 Word decade committed via leader (server 4)
+2026/01/23 22:30:47.160249 Choosing word 7235 of 7520: virtually
+2026/01/23 22:30:47.410933 Attempting to send to server 1
+2026/01/23 22:30:47.411561 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:30:47.661742 Attempting to send to server 4
+2026/01/23 22:30:47.664163 Checking commit status for word virtually via server 4 (attempt 1)
+2026/01/23 22:30:49.664241 Word virtually committed via leader (server 4)
+2026/01/23 22:30:50.665357 Choosing word 2222 of 7519: economies
+2026/01/23 22:30:50.916375 Attempting to send to server 4
+2026/01/23 22:30:50.918521 Checking commit status for word economies via server 4 (attempt 1)
+2026/01/23 22:30:52.919081 Word economies committed via leader (server 4)
+2026/01/23 22:30:53.920088 Choosing word 6197 of 7518: slim
+2026/01/23 22:30:54.170880 Attempting to send to server 2
+2026/01/23 22:30:54.172073 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:30:54.422519 Attempting to send to server 4
+2026/01/23 22:30:54.424991 Checking commit status for word slim via server 4 (attempt 1)
+2026/01/23 22:30:56.425031 Word slim committed via leader (server 4)
+2026/01/23 22:30:57.426394 Choosing word 6919 of 7517: tracker
+2026/01/23 22:30:57.677586 Attempting to send to server 2
+2026/01/23 22:30:57.678220 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:30:57.929478 Attempting to send to server 4
+2026/01/23 22:30:57.932408 Checking commit status for word tracker via server 4 (attempt 1)
+2026/01/23 22:30:59.932758 Word tracker committed via leader (server 4)
+2026/01/23 22:31:00.933377 Choosing word 829 of 7516: brass
+2026/01/23 22:31:01.184175 Attempting to send to server 1
+2026/01/23 22:31:01.184175 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:31:01.434931 Attempting to send to server 4
+2026/01/23 22:31:01.436753 Checking commit status for word brass via server 4 (attempt 1)
+2026/01/23 22:31:03.437121 Word brass committed via leader (server 4)
+2026/01/23 22:31:04.437975 Choosing word 2129 of 7515: downtown
+2026/01/23 22:31:04.688770 Attempting to send to server 3
+2026/01/23 22:31:04.689952 Server 3 is not leader, redirecting to server 4
+2026/01/23 22:31:04.940559 Attempting to send to server 4
+2026/01/23 22:31:04.943106 Checking commit status for word downtown via server 4 (attempt 1)
+2026/01/23 22:31:06.943150 Word downtown committed via leader (server 4)
+2026/01/23 22:31:07.944280 Choosing word 1590 of 7514: cookie
+2026/01/23 22:31:08.195129 Attempting to send to server 2
+2026/01/23 22:31:08.195903 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:31:08.446501 Attempting to send to server 4
+2026/01/23 22:31:08.450262 Checking commit status for word cookie via server 4 (attempt 1)
+2026/01/23 22:31:10.450625 Word cookie committed via leader (server 4)
+2026/01/23 22:31:11.451316 Choosing word 3304 of 7513: hotels
+2026/01/23 22:31:11.701710 Attempting to send to server 2
+2026/01/23 22:31:11.702310 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:31:11.952872 Attempting to send to server 4
+2026/01/23 22:31:11.955098 Checking commit status for word hotels via server 4 (attempt 1)
+2026/01/23 22:31:13.955339 Word hotels committed via leader (server 4)
+2026/01/23 22:31:14.956326 Choosing word 5316 of 7512: qualify
+2026/01/23 22:31:15.206752 Attempting to send to server 1
+2026/01/23 22:31:15.207350 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:31:15.457636 Attempting to send to server 4
+2026/01/23 22:31:15.459570 Checking commit status for word qualify via server 4 (attempt 1)
+2026/01/23 22:31:17.460513 Word qualify committed via leader (server 4)
+2026/01/23 22:31:18.460986 Choosing word 2424 of 7511: events
+2026/01/23 22:31:18.711755 Attempting to send to server 2
+2026/01/23 22:31:18.712316 Server 2 is not leader, redirecting to server 4
+2026/01/23 22:31:18.962566 Attempting to send to server 4
+2026/01/23 22:31:18.965117 Checking commit status for word events via server 4 (attempt 1)
+2026/01/23 22:31:20.965289 Word events committed via leader (server 4)
+2026/01/23 22:31:21.966040 Choosing word 7446 of 7510: workshop
+2026/01/23 22:31:22.216343 Attempting to send to server 1
+2026/01/23 22:31:22.216991 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:31:22.467376 Attempting to send to server 4
+2026/01/23 22:31:22.470015 Checking commit status for word workshop via server 4 (attempt 1)
+2026/01/23 22:31:24.470495 Word workshop committed via leader (server 4)
+2026/01/23 22:31:25.471202 Choosing word 1386 of 7509: completely
+2026/01/23 22:31:25.721961 Attempting to send to server 1
+2026/01/23 22:31:25.722664 Server 1 is not leader, redirecting to server 4
+2026/01/23 22:31:25.973345 Attempting to send to server 4
+2026/01/23 22:31:25.976284 Checking commit status for word completely via server 4 (attempt 1)
+2026/01/23 22:31:27.976343 Word completely committed via leader (server 4)
+2026/01/23 22:31:28.977195 Attempting to stop server 3
+2026/01/23 22:31:28.977863 Attempting to stop server 4
+2026/01/23 22:31:28.978386 Attempting to stop server 1
+2026/01/23 22:31:28.978910 Attempting to stop server 2

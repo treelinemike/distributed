@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"engg415/raft/common"
+	"engg415/raft/raftcommon"
 	"fmt"
 	"io"
 	"log"
@@ -14,11 +14,11 @@ import (
 	"time"
 )
 
-var servers map[string]common.NetworkAddress
+var servers map[string]raftcommon.NetworkAddress
 var isactive map[string]bool
 
 type WrappedResponse struct {
-	r   common.RespToClient
+	r   raftcommon.RespToClient
 	err error
 }
 
@@ -59,14 +59,14 @@ func main() {
 		return
 	}
 	filename := os.Args[1]
-	servers = make(map[string]common.NetworkAddress)
+	servers = make(map[string]raftcommon.NetworkAddress)
 	isactive = make(map[string]bool)
 
 	// load config
 	log.Println("Loading cluster configuration file")
 	var jsonfilebase string
-	var t common.Timeout
-	common.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
+	var t raftcommon.Timeout
+	raftcommon.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
 
 	// configure logging
 	logfilename := "log_client.txt"
@@ -188,7 +188,7 @@ func main() {
 			go func(c chan WrappedResponse, word string) {
 				// TODO: ACTUALLY SUBMIT HERE VIA RPC
 				var wr WrappedResponse
-				var r common.RespToClient
+				var r raftcommon.RespToClient
 				err := servers[svrChoice].Handle.Call("RaftAPI.ProcessClientRequest", []string{thisWord}, &r)
 				wr.err = err
 				wr.r = r
@@ -221,10 +221,12 @@ func main() {
 				continue // re-attempt!
 			}
 
-			// now wait for confirmation that this word has been committed
+			// wait for confirmation that this word has been committed
 			// TODO: better to do this with a timeout in case RPC hangs,
 			// but unlikely because if server is down we'll get an error (vs. hang)
 			// and there isn't much to hang on the server side
+			// will cause problems if server goes down between commit and this check
+			//
 			var commitReply bool
 			for trycount := 0; trycount < 5; trycount++ {
 				log.Printf("Checking commit status for word %v via server %v (attempt %v)\n", thisWord, svrChoice, trycount+1)
@@ -238,7 +240,7 @@ func main() {
 				if err != nil {
 					log.Printf("Error checking commit status from server %v: %v\n", svrChoice, err)
 					break // will have to try again
-					// TODO: if server goes down between commit and this check we will end up double-committing word
+
 				}
 				if commitReply {
 					log.Printf("Word %v committed via leader (server %v)\n", thisWord, svrChoice)
