@@ -1,3 +1,10 @@
+// raftnv.go
+//
+// Data structures for parameters that require nonvolatile storage. Handle export to file and import from file.
+//
+// Author: M. Kokko
+// Updated: 24-Jan-2025
+
 package raftnv
 
 import (

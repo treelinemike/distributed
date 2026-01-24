@@ -1,3 +1,10 @@
+// timer.go
+//
+// Election timer functionality.
+//
+// Author: M. Kokko
+// Updated: 24-Jan-2025
+
 package raftcommon
 
 import (

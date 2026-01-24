@@ -1,3 +1,10 @@
+// raftcommon.go
+//
+// Misc. shared types for Raft implementation.
+//
+// Author: M. Kokko
+// Updated: 24-Jan-2025
+
 package raftcommon
 
 // state of raft server

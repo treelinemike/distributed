@@ -1,3 +1,10 @@
+// server.go
+//
+// This program implements as peer raft server.
+//
+// Author: M. Kokko
+// Updated: 24-Jan-2025
+
 package main
 
 import (
@@ -479,5 +486,27 @@ func main() {
 		}
 
 	}
+
+	// create a new text file wordlist_#.txt and write words from log into it, one word per line
+	log.Println("Writing logged words to file for comparison")
+	outputfilename := fmt.Sprintf("wordlist_%s.txt", selfkey)
+	log.Printf("Creating output wordlist file: %s\n", outputfilename)
+	outputfid, err := os.OpenFile(outputfilename, os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		log.Panicf("Could not create output wordlist file: %v\n", err)
+	}
+	defer outputfid.Close()
+	for i := 1; i <= st.LogLength(); i++ {
+		entry, err := st.GetLogEntry(i)
+		if err != nil {
+			log.Panicf("Could not get log entry %v: %v\n", i, err)
+		}
+
+		_, err = outputfid.WriteString(entry.Value + "\n")
+		if err != nil {
+			log.Panicf("Could not write log entry %v to output file: %v\n", i, err)
+		}
+	}
+	log.Println("Exiting")
 
 }

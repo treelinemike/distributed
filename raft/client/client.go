@@ -1,3 +1,10 @@
+// client.go
+//
+// This program sends random words from a word list to our Raft cluster.
+//
+// Author: M. Kokko
+// Updated: 24-Jan-2025
+
 package main
 
 import (
@@ -14,15 +21,20 @@ import (
 	"time"
 )
 
+// keep track of servers in cluster
+// including which are known to be active
 var servers map[string]raftcommon.NetworkAddress
 var isactive map[string]bool
 
+// wrapper for response to client
+// used to ensure we can get an error back from a goroutine
 type WrappedResponse struct {
 	r   raftcommon.RespToClient
 	err error
 }
 
-// repeatedly attempt to reconnect to host
+// function to repeatedly attempt to reconnect to host
+// will be executed as a goroutine
 func reconnectToHost(svr string) {
 	log.Printf("Attempting to reconnect to server %v (%s:%s)\n", svr, servers[svr].Address, servers[svr].Port)
 	for {
@@ -45,6 +57,7 @@ func reconnectToHost(svr string) {
 	}
 }
 
+// main function
 func main() {
 
 	var err error
@@ -53,22 +66,24 @@ func main() {
 	// will start logging to file as soon as we know which host key we have been assigned
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
-	// load cluster configuration
+	// parse command line arguments
 	if len(os.Args) != 2 {
 		fmt.Println("Usage: go run . configfile.yaml")
 		return
 	}
 	filename := os.Args[1]
+
+	// initialize server tracking maps
 	servers = make(map[string]raftcommon.NetworkAddress)
 	isactive = make(map[string]bool)
 
-	// load config
+	// load cluster configuration
 	log.Println("Loading cluster configuration file")
 	var jsonfilebase string
 	var t raftcommon.Timeout
 	raftcommon.LoadRaftConfig(filename, servers, &t, &jsonfilebase)
 
-	// configure logging
+	// finish configuring logging to stdout and file
 	logfilename := "log_client.txt"
 	log.Printf("Creating log file: %s", logfilename)
 	logfid, err := os.OpenFile(logfilename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
@@ -78,10 +93,10 @@ func main() {
 	defer logfid.Close()
 	mux := io.MultiWriter(os.Stdout, logfid)
 	log.SetOutput(mux)
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds) // for good measure?
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds) // even though we've already done this...
 
 	// connect to each server in the cluster
-	// use a bunch of goroutines with timeouts
+	// use separate goroutines with timeouts
 	// ok to block with a wait group here beause we do actually need to connect to all of our servers
 	// TODO: better handle the case when a server is initially crashed?
 	log.Println("Trying to connect to all servers now...")
@@ -90,7 +105,7 @@ func main() {
 	for svr_key, svr_data := range servers { // ranging over a map returns (key, value) pairs
 
 		wg.Add(1)
-		go func(svr_key string) { // note: we can still access servers due to scoping of goroutine
+		go func(svr_key string) { // note: we can still access server tracking globals due to scoping of goroutine
 			defer wg.Done()
 			// try connect to host repeatedly (even if OS times out the attempt very quickly)
 			// we will use our own timeout on the connection attempt
@@ -183,10 +198,10 @@ func main() {
 			}
 			log.Printf("Attempting to send to server %v\n", svrChoice)
 
-			// send this word to server
+			// send this word to server in a goroutine
+			// why? so we can use a channel/select-based timeout
 			serverResp := make(chan WrappedResponse)
 			go func(c chan WrappedResponse, word string) {
-				// TODO: ACTUALLY SUBMIT HERE VIA RPC
 				var wr WrappedResponse
 				var r raftcommon.RespToClient
 				err := servers[svrChoice].Handle.Call("RaftAPI.ProcessClientRequest", []string{thisWord}, &r)
@@ -195,6 +210,8 @@ func main() {
 				c <- wr
 			}(serverResp, thisWord)
 			var resp WrappedResponse
+
+			// if we timeout we should start trying to reconnect
 			select {
 			case resp = <-serverResp:
 			case <-time.After(200 * time.Millisecond):
@@ -206,6 +223,8 @@ func main() {
 				continue // re-attempt!
 			}
 
+			// if we got a response but there was an error we should try to reconnect
+			// TODO: we're assuming that the error will be a failure to connect, make this more explicit
 			if resp.err != nil {
 				// remove this server from active list and try to reconnect
 				log.Printf("Error submitting word to server: %v\n", resp.err)
@@ -215,7 +234,17 @@ func main() {
 				continue // re-attempt!
 			}
 
+			// handle case where request is rejected by server
 			if !resp.r.AppendedToLeader {
+
+				// if ID of actual leader not provided, try again
+				if resp.r.LeaderID == "" {
+					log.Printf("Server %v REJECTED word [%v] and failed to redirect request!", svrChoice, thisWord)
+					svrChoice = "" // reset so we randomly select server again next time
+					continue       // re-attempt!
+				}
+
+				// handle redirection to current leader
 				log.Printf("Server %v is not leader, redirecting to server %v\n", svrChoice, resp.r.LeaderID)
 				svrChoice = resp.r.LeaderID
 				continue // re-attempt!
@@ -226,14 +255,12 @@ func main() {
 			// but unlikely because if server is down we'll get an error (vs. hang)
 			// and there isn't much to hang on the server side
 			// will cause problems if server goes down between commit and this check
-			//
 			var commitReply bool
 			for trycount := 0; trycount < 5; trycount++ {
 				log.Printf("Checking commit status for word %v via server %v (attempt %v)\n", thisWord, svrChoice, trycount+1)
 
 				// wait before checking
-				// TODO: correct timing
-				//time.Sleep(200 * time.Millisecond)
+				// TODO: update if raft timing is adjusted
 				time.Sleep(2 * time.Second)
 
 				err := servers[svrChoice].Handle.Call("RaftAPI.IsFullyCommitted", 0, &commitReply)
@@ -263,7 +290,6 @@ func main() {
 		}
 
 		// wait before attempting to commit next word
-		// TODO: this doesn't produce *exactly* 1s period but that isn't critical
 		time.Sleep(1 * time.Second)
 	}
 

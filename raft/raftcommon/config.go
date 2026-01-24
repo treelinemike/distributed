@@ -1,3 +1,10 @@
+// config.go
+//
+// Handle loading Raft cluster configuration from yaml file.
+//
+// Author: M. Kokko
+// Updated: 24-Jan-2025
+
 package raftcommon
 
 import (
