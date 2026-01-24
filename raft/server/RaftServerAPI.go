@@ -1,3 +1,10 @@
+// RaftServerAPI.go
+//
+// Types and methods used in RPC calls for Raft server.
+//
+// Author: M. Kokko
+// Updated: 24-Jan-2025
+
 package main
 
 import (
